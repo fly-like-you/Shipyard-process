@@ -1,7 +1,7 @@
 import os
 import random
 import pandas as pd
-import math
+import sys
 
 
 class block:
@@ -21,8 +21,12 @@ class block:
                     self.start_pos, self.end_pos)
         return ret
 
+osName = sys.platform
+if osName == 'windows':
+    file_name = os.getcwd() + '\\create_data\\data\\map.xlsx'
+elif osName == 'darwin':
+    file_name = os.getcwd() + '/create_data/data/map.xlsx'
 
-file_name = os.getcwd() + '/create_data/data/map.xlsx'
 df = pd.read_excel(file_name, engine='openpyxl')
 blocks = []
 for i in range(1, 101):  # 옮겨야 할 블록 개수 (작업 개수)

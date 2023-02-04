@@ -1,13 +1,21 @@
 import pandas as pd
 import numpy as np
-import csv
+import sys
 import pathlib
 import os
 
-file_name = os.getcwd() + '/create_data/data/transporter.csv'
+
+osName = sys.platform
+file_name = ''
+if osName == 'windows':
+    file_name = os.getcwd() + '\\create_data\\data\\transporter.csv'
+elif osName == 'darwin':
+    file_name = os.getcwd() + '/create_data/data/transporter.csv'
+else:
+    exit(0)
+
 file = pathlib.Path(file_name)
-
-
+print(file_name)
 class transporter:
     def __init__(self, no, available_weight, empty_speed, work_speed):
         self.no = no
@@ -33,4 +41,4 @@ if file.exists():
         transporters.append(transporter(n, a, e, w))
 
 else:
-    print(0)
+    print(-1)

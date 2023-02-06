@@ -21,7 +21,6 @@ def measure_execution_time(func):
     return wrapper
 
 
-
 def evaluation(transporter):
     '''
         if arr이 실현가능한 해:
@@ -31,21 +30,19 @@ def evaluation(transporter):
     if len(transporter.works) == 0: # 트랜스포터의 작업이 0인 경우
         return True
     times = []
-    for work_idx in range(len(transporter.works)): # 트랜스포터의 작업 수 만큼 반복
-        if transporter.available_weight < transporter.works[work_idx].weight:
-            return False
-        if work_idx == 0:
+    for i in range(len(transporter.works)): # 트랜스포터의 작업 수 만큼 반복
+        if i == 0:
             prev = [0, 0]
             pick_up_time = transporter.works[0].start_time
         else: # ???
-            prev = transporter.works[work_idx - 1].end_pos
-            pick_up_time = max(times[-1][1], transporter.works[work_idx].start_time) # 직전 작업과 비교하여 최대값 선정
+            prev = transporter.works[i - 1].end_pos
+            pick_up_time = max(times[-1][1], transporter.works[i].start_time) # 직전 작업과 비교하여 최대값 선정
 
 
         # 트랜스포터가 현재 지점에서 블록까지 가는 곳 까지의 거리
-        prev_to_start_dist = math.dist(prev, transporter.works[work_idx].start_pos) / 1000
+        prev_to_start_dist = math.dist(prev, transporter.works[i].start_pos) / 1000
         # 블록이 이동될 거리
-        start_to_end_dist = math.dist(transporter.works[work_idx].start_pos, transporter.works[work_idx].end_pos) / 1000
+        start_to_end_dist = math.dist(transporter.works[i].start_pos, transporter.works[i].end_pos) / 1000
 
         prev_to_start_time = prev_to_start_dist / transporter.empty_speed
         start_to_end_time = start_to_end_dist / transporter.work_speed
@@ -58,7 +55,7 @@ def evaluation(transporter):
             # 안의 판별식이 모두 False이면 불가능한해이므로 리턴
             if not (pick_up_time >= end or finish_time <= start) or \
                     finish_time > FINISH_TIME or \
-                    transporter.works[work_idx].end_time < finish_time or \
+                    transporter.works[i].end_time < finish_time or \
                     finish_time + LOAD_REST_TIME > FINISH_TIME:  #
                 flag = False
                 break
@@ -167,8 +164,6 @@ def mutation_2():
 
 
 
-
-
 def mutation_3(mutationRate):
 
     transporters = copy.deepcopy(population[0])
@@ -190,6 +185,7 @@ def mutation_3(mutationRate):
             if evaluation(min_len_temp) and evaluation(max_len_temp):
                 population[0][min_len_trans.no].works = min_len_temp.works[::]
                 population[0][max_len_trans.no].works = max_len_temp.works[::]
+
 
 def can_insert(i, cur_block):
     '''
@@ -237,8 +233,8 @@ def perm(idx, length, arr):  # 순열, 백트래킹
                 visited[i] = False
             arr.works.pop()
 
-@measure_execution_time
-def run_ga():
+# @measure_execution_time
+def run_ga2():
     global population, cnt, temp, flag, trans, min_dist, tsp_route, visited, arr
     population = generate_population(1)
     # random으로 생성된 스케줄의 결과 확인
@@ -258,62 +254,46 @@ def run_ga():
     result_population = None
     best = 0
     stop = 0
-    for i in range(1000):
-        rand = random.random()
-        if rand < 0.25:
-            mutation_1()
-        elif rand < 0.50:
-            mutation_2()
-        elif result_population is not None and rand < 0.75:
-            for i, cur_trans in enumerate(result_population):
-                if cur_trans.works:
-                    temp = copy.deepcopy(result_population)
-                    flag = True
-
-                    while temp[i].works:
-                        cur_block = temp[i].works.pop()
-                        if not can_insert(i, cur_block):
-                            flag = False
-                            break
-
-                    if flag:
-                        result_population = copy.deepcopy(temp)
-        else:
-            mutation_3(0.9)
-
-
-
-        # 매 세대마다 결과 측정
-        cnt = 0
-        time = 0
-        for j in population[0]:
-            if j.works:
-                cnt += 1
-                time += evaluation(j)
-
-        if ans > [cnt, time]:
-            ans = [cnt, time]
-            result_population = copy.deepcopy(population[0])
-            stop = 0
-
-        # 똑같은 결과가 500세대가 되면, early stop
-        stop += 1
-        if stop == 500:
-            break
-
-    # for i, cur_trans in enumerate(result_population):
-    #     if cur_trans.works:
-    #         temp = copy.deepcopy(result_population)
-    #         flag = True
+    # for i in range(1000):
+    #     rand = random.random()
+    #     if rand < 0.33:
+    #         mutation_1()
+    #     elif rand < 0.66:
+    #         mutation_2()
+    #     else:
+    #         mutation_3()
     #
-    #         while temp[i].works:
-    #             cur_block = temp[i].works.pop()
-    #             if not can_insert(i, cur_block):
-    #                 flag = False
-    #                 break
+    #     # 매 세대마다 결과 측정
+    #     cnt = 0
+    #     time = 0
+    #     for j in population[0]:
+    #         if j.works:
+    #             cnt += 1
+    #             time += evaluation(j)
     #
-    #         if flag:
-    #             result_population = copy.deepcopy(temp)
+    #     if ans > [cnt, time]:
+    #         ans = [cnt, time]
+    #         result_population = copy.deepcopy(population[0])
+    #         stop = 0
+    #
+    #     # 똑같은 결과가 500세대가 되면, early stop
+    #     stop += 1
+    #     if stop == 500:
+    #         break
+    result_population = copy.deepcopy(population[0])
+    for i, cur_trans in enumerate(result_population):
+        if cur_trans.works:
+            temp = copy.deepcopy(result_population)
+            flag = True
+
+            while temp[i].works:
+                cur_block = temp[i].works.pop()
+                if not can_insert(i, cur_block):
+                    flag = False
+                    break
+
+            if flag:
+                result_population = copy.deepcopy(temp)
     # for trans in result_population:
     #     if trans.works:
     #         min_dist = math.inf
@@ -336,8 +316,8 @@ def run_ga():
     # given
     transporter_list = result_population
     performance = (abs(initital_count - optimization_count) / initital_count + abs(initital_time - optimization_time) / initital_time) * 100
-
-
+    #
+    #
     # for i in transporter_list:
     #     if i.works:
     #         print('transporter')
@@ -347,7 +327,6 @@ def run_ga():
     #             print(j)
     #
     #         print()
-
     return transporter_list, performance
 
 
@@ -355,6 +334,6 @@ def run_ga():
 
 
 if __name__ == '__main__':
-    run_ga()
+    run_ga2()
 
 

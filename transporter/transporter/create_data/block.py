@@ -22,7 +22,7 @@ class block:
         return ret
 
 osName = sys.platform
-if osName == 'windows':
+if osName == 'win32':
     file_name = os.getcwd() + '\\create_data\\data\\map.xlsx'
 elif osName == 'darwin':
     file_name = os.getcwd() + '/create_data/data/map.xlsx'

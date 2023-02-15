@@ -1,17 +1,19 @@
 import unittest
 from GA import *
 import sys
+from GA_refactoring import fitness
 
+class legacy_ga_test(unittest.TestCase):
+    initial_individual = generate_population(1)
+    result_individual, a = run_ga()
 
-class MyTestCase(unittest.TestCase):
     def test_초기_데이터_갯수(self): # 데이터가 끝나기
         # given
         count = 0
-        population = generate_population(1)
-        transporter_list = population[0]
+        result_individual = legacy_ga_test.population[0]
 
         # when
-        for transporter in transporter_list:
+        for transporter in result_individual:
             process = transporter.works
             if process:
                 count += len(process)
@@ -22,8 +24,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_데이터_중량_무결성(self):
         # given
-        population = generate_population(1)
-        transporter_list = population[0]
+        transporter_list = legacy_ga_test.population[0]
+
 
         # when
         for transporter in transporter_list:
@@ -33,8 +35,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_데이터_시간_무결성(self):
         # given
-        population = generate_population(1)
-        transporter_list = population[0]
+        transporter_list = legacy_ga_test.population[0]
 
         optimization_count = 0
         work = 0
@@ -47,29 +48,22 @@ class MyTestCase(unittest.TestCase):
         # when
 
         # then
-    def test_결과_데이터(self): # 결과 데이터의 개수가 맞는가?
-        # given
-        transporter_list, a = run_ga()
 
-        li = []
-        for i in transporter_list:
-            if i.works:
-                for j in i.works:
-                    li.append(j.no)
-
-        li.sort()
-        print(li)
-        # when
-
-        # then
     def test_결과_데이터_중량_무결성(self):
         # given
-        transporter_list, a = run_ga()
-
+        transporter_list = legacy_ga_test.result_individual
         # when
         for transporter in transporter_list:
             if any(work.weight > transporter.available_weight for work in transporter.works):
                 self.assertEqual(transporter.available_weight, transporter.works[0].weight)
+
+    def test_내가_짠_코드와비교(self):
+        transporter_list = legacy_ga_test.result_individual
+
+        fitness_values = fitness(transporter_list)
+        print(fitness_values)
+
+
 
 if __name__ == '__main__':
     unittest.main()

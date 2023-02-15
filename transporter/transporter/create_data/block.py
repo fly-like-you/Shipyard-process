@@ -2,8 +2,10 @@ import os
 import random
 import pandas as pd
 import sys
-
+import pathlib
+import csv
 BLOCKS = 100
+
 
 class block:
     def __init__(self, no, weight, start_node, end_node, start_time, end_time, start_pos, end_pos):
@@ -17,10 +19,14 @@ class block:
         self.end_pos = end_pos  # 종료 노드 좌표
 
     def __str__(self):
-        ret = 'no: {}, weight: {}, start_node: {}, end_node: {}, time: {} ~ {}, pos: {} -> {}'\
+        # ret = 'no: {}, weight: {}, start_node: {}, end_node: {}, time: {} ~ {}, pos: {} -> {}' \
+        #     .format(self.no, self.weight, self.start_node, self.end_node, self.start_time, self.end_time,
+        #             self.start_pos, self.end_pos)
+        ret = '{} {} {} {} {} {} {} {} {} {}' \
             .format(self.no, self.weight, self.start_node, self.end_node, self.start_time, self.end_time,
-                    self.start_pos, self.end_pos)
+                    self.start_pos[0], self.start_pos[1], self.end_pos[0], self.end_pos[1])
         return ret
+
 
 osName = sys.platform
 if osName == 'win32':
@@ -28,40 +34,64 @@ if osName == 'win32':
 elif osName == 'darwin':
     file_name = os.getcwd() + '/create_data/data/map.xlsx'
 
-df = pd.read_excel(file_name, engine='openpyxl')
-blocks = []
-for i in range(1, BLOCKS + 1):  # 옮겨야 할 블록 개수 (작업 개수)
-    w = random.random()  # 가중치를 두고, 블록 생성
-    if w <= 0.07:
-        w = random.randint(1, 50)
-    elif w <= 0.18:
-        w = random.randint(50, 150)
-    elif w <= 0.29:
-        w = random.randint(150, 250)
-    elif w <= 0.47:
-        w = random.randint(250, 350)
-    elif w <= 0.66:
-        w = random.randint(350, 450)
-    elif w <= 0.81:
-        w = random.randint(450, 500)
-    elif w <= 0.92:
-        w = random.randint(500, 600)
-    elif w <= 1:
-        w = random.randint(600, 700)
+if __name__ == "__main__":
+    if osName == 'win32':
+        file_name = os.getcwd() + '\\data\\map.xlsx'
+    elif osName == 'darwin':
+        file_name = os.getcwd() + '/data/map.xlsx'
 
-    start_node = random.randint(1, 30)
-    end_node = random.randint(1, 30)
-    while start_node == end_node:  # 시작 노드, 종료 노드가 달라야 함
-        end_node = random.randint(1, 30)
+file = pathlib.Path(file_name)
 
-    start_time = 9
-    if random.random() <= 0.7:
-        start_time = random.randint(9, 13)
-    end_time = random.randint(9, 18)
 
-    while start_time + 4 > end_time: # 최소 작업시간이 4시간 이상 이어야 함
+
+if file.exists():
+    df = pd.read_excel(file_name, engine='openpyxl')
+    blocks = []
+    for i in range(1, BLOCKS + 1):  # 옮겨야 할 블록 개수 (작업 개수)
+        w = random.random()  # 가중치를 두고, 블록 생성
+        if w <= 0.07:
+            w = random.randint(1, 50)
+        elif w <= 0.18:
+            w = random.randint(50, 150)
+        elif w <= 0.29:
+            w = random.randint(150, 250)
+        elif w <= 0.47:
+            w = random.randint(250, 350)
+        elif w <= 0.66:
+            w = random.randint(350, 450)
+        elif w <= 0.81:
+            w = random.randint(450, 500)
+        elif w <= 0.92:
+            w = random.randint(500, 600)
+        elif w <= 1:
+            w = random.randint(600, 700)
+
+        node1 = df.sample()
+        node2 = df.sample()
+
+
+
+        start_node = node1['no'].values[0]
+        end_node = node2['no'].values[0]
+
+        while start_node == end_node:  # 시작 노드, 종료 노드가 달라야 함
+            node1 = df.sample()
+            start_node = node1['no'].values[0]
+
+        start_time = 9
+        if random.random() <= 0.7:
+            start_time = random.randint(9, 13)
+
         end_time = random.randint(9, 18)
+        while start_time + 4 > end_time:  # 최소 작업시간이 4시간 이상 이어야 함
+            end_time = random.randint(9, 18)
 
-    start_pos = [df.iloc[start_node]['x'], df.iloc[start_node]['y']]
-    end_pos = [df.iloc[end_node]['x'], df.iloc[end_node]['y']]
-    blocks.append(block(i, w, start_node, end_node, start_time, end_time, start_pos, end_pos))
+        start_pos = [node1['x'].values[0], node1['y'].values[0]]
+        end_pos = [node2['x'].values[0], node2['y'].values[0]]
+
+        blocks.append(block(i, w, start_node, end_node, start_time, end_time, start_pos, end_pos))
+else:
+    print(1)
+
+for i in blocks:
+    print(i)

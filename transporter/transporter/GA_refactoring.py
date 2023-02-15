@@ -12,9 +12,9 @@ FINISH_TIME = 18
 START_TIME = 9
 LOAD_REST_TIME = 0.5
 POPULATION_SIZE = 100  # 개체집단 크기
-GENERATION_SIZE = 400  # 진화 세대 수
-ELITISM_RATE = 0.4  # 엘리트 개체 비율
-MUTATION_RATE = 0.3  # 돌연변이 확률
+GENERATION_SIZE = 300  # 진화 세대 수
+ELITISM_RATE = 0.5  # 엘리트 개체 비율
+MUTATION_RATE = 0.4  # 돌연변이 확률
 
 
 class SetSizeException(Exception):
@@ -41,6 +41,9 @@ def fitness(individual):
     DOCK = [0, 0]
     fitness_score = 0
     empty_tp_score = 100000
+    for transporter in individual:
+        if any(work.weight > transporter.available_weight for work in transporter.works):
+            return 0.0
 
     for transporter in individual:
         cur_time = START_TIME  # 작업을 시작할 수 있는 가장 빠른 시간
@@ -243,6 +246,7 @@ def run_GA():
     best_individual = population[np.argmax(fitness_values)]
     print(f'Final generation best individual: {print_individual(best_individual)}, best_fitness_value: {np.max(fitness_values)}')
     print(print_individual(population[0]))
+    return best_individual
 
 
 

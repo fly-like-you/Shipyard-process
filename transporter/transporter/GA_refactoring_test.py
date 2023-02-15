@@ -6,6 +6,7 @@ from create_data.transporter import transporters
 
 class MyTestCase(unittest.TestCase):
     population = generate_population(100, transporters, blocks)
+    best_individual = run_GA()
 
     def test_generate_population(self): # 블록 개수와 블록 중복 체크
         # given
@@ -24,14 +25,16 @@ class MyTestCase(unittest.TestCase):
 
     def test_fitness(self):
         # given
-
-        fitness_values = [fitness(p) for p in MyTestCase.population]
-        fitness_values.sort()
-        print(fitness_values)
-
-    def test_selection(self):
         pass
 
+
+    def test_결과_데이터_중량_무결성(self):
+        # given
+        result_individual = MyTestCase.best_individual
+        # when
+        for transporter in result_individual:
+            if any(work.weight > transporter.available_weight for work in transporter.works):
+                self.assertEqual(transporter.available_weight, transporter.works[0].weight)
 
 
 if __name__ == '__main__':

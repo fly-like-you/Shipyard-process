@@ -1,5 +1,5 @@
 import unittest
-from GA import *
+from GA_legacy import *
 import sys
 from GA_refactoring import fitness
 

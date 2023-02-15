@@ -17,7 +17,7 @@ def measure_time(function, *args, **kwargs):
     return time.time() - start_time, result, performance
 
 try:
-    exec(open("GA.py", encoding='UTF8').read(), globals())
+    exec(open("GA_legacy.py", encoding='UTF8').read(), globals())
     exec(open("GA_notGA.py", encoding='UTF8').read(), globals())
 except Exception as e:
     sys.stderr.write("Error: " + str(e))

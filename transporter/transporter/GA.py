@@ -301,29 +301,29 @@ def run_ga():
         if stop == 500:
             break
 
-    # for i, cur_trans in enumerate(result_population):
-    #     if cur_trans.works:
-    #         temp = copy.deepcopy(result_population)
-    #         flag = True
-    #
-    #         while temp[i].works:
-    #             cur_block = temp[i].works.pop()
-    #             if not can_insert(i, cur_block):
-    #                 flag = False
-    #                 break
-    #
-    #         if flag:
-    #             result_population = copy.deepcopy(temp)
-    # for trans in result_population:
-    #     if trans.works:
-    #         min_dist = math.inf
-    #         tsp_route = []
-    #         visited = [False] * len(trans.works)
-    #         arr = copy.deepcopy(trans)
-    #         arr.works = []
-    #         cnt = 0
-    #         perm(0, len(trans.works), arr)
-    #         trans.works = tsp_route[::]  # tsp_route를 현재 트랜스포터의 작업 순서로
+    for i, cur_trans in enumerate(result_population):
+        if cur_trans.works:
+            temp = copy.deepcopy(result_population)
+            flag = True
+
+            while temp[i].works:
+                cur_block = temp[i].works.pop()
+                if not can_insert(i, cur_block):
+                    flag = False
+                    break
+
+            if flag:
+                result_population = copy.deepcopy(temp)
+    for trans in result_population:
+        if trans.works:
+            min_dist = math.inf
+            tsp_route = []
+            visited = [False] * len(trans.works)
+            arr = copy.deepcopy(trans)
+            arr.works = []
+            cnt = 0
+            perm(0, len(trans.works), arr)
+            trans.works = tsp_route[::]  # tsp_route를 현재 트랜스포터의 작업 순서로
     optimization_count = 0
     work = 0
     optimization_time = 0

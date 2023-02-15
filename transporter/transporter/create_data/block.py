@@ -3,6 +3,7 @@ import random
 import pandas as pd
 import sys
 
+BLOCKS = 100
 
 class block:
     def __init__(self, no, weight, start_node, end_node, start_time, end_time, start_pos, end_pos):
@@ -29,7 +30,7 @@ elif osName == 'darwin':
 
 df = pd.read_excel(file_name, engine='openpyxl')
 blocks = []
-for i in range(1, 31):  # 옮겨야 할 블록 개수 (작업 개수)
+for i in range(1, BLOCKS + 1):  # 옮겨야 할 블록 개수 (작업 개수)
     w = random.random()  # 가중치를 두고, 블록 생성
     if w <= 0.07:
         w = random.randint(1, 50)

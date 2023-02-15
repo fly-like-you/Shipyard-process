@@ -8,9 +8,9 @@ import os
 osName = sys.platform
 file_name = ''
 if osName == 'win32':
-    file_name = os.getcwd() + '\\create_data\\data\\transporter.csv'
+    file_name = os.getcwd() + '\\create_data\\data\\transporter(len10).csv'
 elif osName == 'darwin':
-    file_name = os.getcwd() + '/create_data/data/transporter.csv'
+    file_name = os.getcwd() + '/create_data/data/transporter(len10).csv'
 else:
     exit(0)
 

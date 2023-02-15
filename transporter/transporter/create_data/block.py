@@ -29,7 +29,7 @@ elif osName == 'darwin':
 
 df = pd.read_excel(file_name, engine='openpyxl')
 blocks = []
-for i in range(1, 101):  # 옮겨야 할 블록 개수 (작업 개수)
+for i in range(1, 31):  # 옮겨야 할 블록 개수 (작업 개수)
     w = random.random()  # 가중치를 두고, 블록 생성
     if w <= 0.07:
         w = random.randint(1, 50)

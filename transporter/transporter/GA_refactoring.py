@@ -1,11 +1,10 @@
 # 새로 작성한 GA
 import copy
-
-from create_data.block import blocks, BLOCKS  # 블록, 트랜스포터 정보 가져오기
-from create_data.transporter import transporters
+from create_data.FileManager import FileManager
 import random
 import math
 import numpy as np
+import os
 
 # 상수 정의
 FINISH_TIME = 18
@@ -15,7 +14,7 @@ POPULATION_SIZE = 100  # 개체집단 크기
 GENERATION_SIZE = 300  # 진화 세대 수
 ELITISM_RATE = 0.5  # 엘리트 개체 비율
 MUTATION_RATE = 0.4  # 돌연변이 확률
-
+BLOCKS = 100
 
 class SetSizeException(Exception):
     pass
@@ -61,7 +60,7 @@ def fitness(individual):
             dist2 = math.dist(block.start_pos, block.end_pos) / 1000
             cur_time += dist2 / transporter.work_speed  # 블록을 운반하는데 걸리는 시간 추가
 
-            if cur_time > block.end_time: # 운반을 끝내는데 걸린 시간이 작업종료시간을 만족하지 않는다면 해는 유효하지 않음
+            if cur_time > block.end_time:  # 운반을 끝내는데 걸린 시간이 작업종료시간을 만족하지 않는다면 해는 유효하지 않음
                 return 0.0
             cur_pos = block.end_pos  # 현재 위치를 블록의 종료 위치로 업데이트
 
@@ -90,9 +89,9 @@ def selection(population, fitness_values):
     return parents
 
 
-def crossover(parent1, parent2):
-    child1 = copy.deepcopy(transporters)
-    child2 = copy.deepcopy(transporters)
+def crossover(parent1, parent2, empty_transporters):
+    child1 = copy.deepcopy(empty_transporters)
+    child2 = copy.deepcopy(empty_transporters)
     for i in range(1, BLOCKS + 1):
         # 각 부모 트랜스포터 중 하나 선택
         if random.random() < 0.5:
@@ -198,13 +197,13 @@ def mutation(individual, mutationRate):
     test_tp_data(individual)
 
 
-def run_GA():
+def run_GA(transporters, blocks):
+
     population = generate_population(POPULATION_SIZE, transporters, blocks)
     print(print_individual(population[0]))
     # 진화 시작
     for generation in range(GENERATION_SIZE):
         # 각 개체의 적합도 계산
-        a = 1
         fitness_values = [fitness(p) for p in population]
 
         # 현재 세대에서 가장 우수한 개체 출력
@@ -227,7 +226,7 @@ def run_GA():
             parent1, parent2 = random.sample(parents, k=2)
 
             # 교차 연산 수행
-            child1, child2 = crossover(parent1, parent2)
+            child1, child2 = crossover(parent1, parent2, transporters)
             # 교차 연산 결과 자손 개체 추가
             if child1:
                 offspring.append(child1)
@@ -236,19 +235,28 @@ def run_GA():
         for individual in offspring:
             mutation(individual, MUTATION_RATE)
 
-        # 다음 세대 개체집단 생성
+        # 다음 세대 개체 집단 생성
         population = elites + offspring
-        # 돌연변이 연산 수행
-
+        # 돌연 변이 연산 수행
 
     # 최종 세대에서 가장 우수한 개체 출력
     fitness_values = [fitness(p) for p in population]
     best_individual = population[np.argmax(fitness_values)]
-    print(f'Final generation best individual: {print_individual(best_individual)}, best_fitness_value: {np.max(fitness_values)}')
+    print(
+        f'Final generation best individual: {print_individual(best_individual)}, best_fitness_value: {np.max(fitness_values)}')
     print(print_individual(population[0]))
     return best_individual
 
 
-
 if __name__ == "__main__":
-    run_GA()
+
+
+
+    transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
+    block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'map.xlsx')
+
+    filemanager = FileManager()
+
+    transporter_container = filemanager.get_transporters(transporter_path)
+    block_container = filemanager.load_block_data(block_path, 100)
+    run_GA(transporter_container, block_container)

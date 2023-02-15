@@ -1,6 +1,6 @@
 import csv
 # 입력 양식
-with open('blocks.csv', mode='w', newline='') as file:
+with open('create_data/blocks.csv', mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(['no', 'weight', 'start_node', 'end_node', 'start_time', 'end_time', 'start_pos', 'end_pos'])
 

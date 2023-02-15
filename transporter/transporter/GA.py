@@ -2,10 +2,9 @@ import copy
 import time
 
 import math
-from create_data.block import blocks  # 블록, 트랜스포터 정보 가져오기
-from create_data.transporter import transporters
+from create_data.FileManager import FileManager
+import os
 import random
-from GA_refactoring import fitness
 
 # 상수 정의
 FINISH_TIME = 18
@@ -74,7 +73,7 @@ def evaluation(transporter):
 
 
 
-def generate_population(size):
+def generate_population(size, transporters, blocks):
     ret = []
     for _ in range(size):
         cur_population = copy.deepcopy(transporters)
@@ -238,9 +237,9 @@ def perm(idx, length, arr):  # 순열, 백트래킹
             arr.works.pop()
 
 @measure_execution_time
-def run_ga():
+def run_ga(transporters, blocks):
     global population, cnt, temp, flag, trans, min_dist, tsp_route, visited, arr
-    population = generate_population(1)
+    population = generate_population(1, transporters, blocks)
     # random으로 생성된 스케줄의 결과 확인
     initital_count = 0
     initital_time = 0
@@ -355,6 +354,13 @@ def run_ga():
 
 
 if __name__ == '__main__':
-    run_ga()
+    transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
+    block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'map.xlsx')
 
+    filemanager = FileManager()
+
+    transporter_container = filemanager.get_transporters(transporter_path)
+    block_container = filemanager.load_block_data(block_path, 100)
+
+    run_ga(transporter_container, block_container)
 

@@ -1,7 +1,8 @@
 import unittest
 from GA_refactoring import *
-from create_data.block import blocks, BLOCKS  # 블록, 트랜스포터 정보 가져오기
-from create_data.transporter import transporters
+from create_data.Block import BLOCKS  # 블록, 트랜스포터 정보 가져오기
+from transporter.transporter.create_data.FileManager import blocks
+from create_data.Transporter import transporters
 # 박준호가 작성한 GA_refactoring 파일의 코드를 테스트하는 코드입니다.
 
 class MyTestCase(unittest.TestCase):

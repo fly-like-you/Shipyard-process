@@ -1,22 +1,4 @@
-import pandas as pd
-import numpy as np
-import sys
-import pathlib
-import os
-
-
-osName = sys.platform
-file_name = ''
-if osName == 'win32':
-    file_name = os.getcwd() + '\\create_data\\data\\transporter.csv'
-elif osName == 'darwin':
-    file_name = os.getcwd() + '/create_data/data/transporter.csv'
-else:
-    exit(0)
-
-file = pathlib.Path(file_name)
-print(file_name)
-class transporter:
+class Transporter:
     def __init__(self, no, available_weight, empty_speed, work_speed):
         self.no = no
         self.available_weight = available_weight
@@ -33,12 +15,3 @@ class transporter:
         return ret
 
 
-if file.exists():
-    df = pd.read_csv(file)
-    temp = list(zip(df['no'] - 1, df['available_weight'], df['empty_speed'], df['work_speed']))
-    transporters = []
-    for n, a, e, w in temp:
-        transporters.append(transporter(n, a, e, w))
-
-else:
-    print(-1)

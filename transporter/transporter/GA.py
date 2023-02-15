@@ -5,7 +5,7 @@ import math
 from create_data.block import blocks  # 블록, 트랜스포터 정보 가져오기
 from create_data.transporter import transporters
 import random
-
+from GA_refactoring import fitness
 
 # 상수 정의
 FINISH_TIME = 18

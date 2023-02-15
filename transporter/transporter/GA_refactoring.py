@@ -6,15 +6,14 @@ from create_data.transporter import transporters
 import random
 import math
 import numpy as np
-from GA import evaluation
 
 # 상수 정의
 FINISH_TIME = 18
 START_TIME = 9
 LOAD_REST_TIME = 0.5
 POPULATION_SIZE = 100  # 개체집단 크기
-GENERATION_SIZE = 100  # 진화 세대 수
-ELITISM_RATE = 0.5  # 엘리트 개체 비율
+GENERATION_SIZE = 400  # 진화 세대 수
+ELITISM_RATE = 0.4  # 엘리트 개체 비율
 MUTATION_RATE = 0.3  # 돌연변이 확률
 
 
@@ -29,8 +28,6 @@ def generate_population(size, transporter_li, block_li):
         for block in block_li:
             transporter_candidates = [t for t in cur_population if t.available_weight >= block.weight]
 
-            # 시간적으로 알맞은 트랜스포터 작업 선정
-
             transporter = transporter_candidates.pop(random.randint(0, len(transporter_candidates) - 1))
             transporter.works.insert(random.randint(0, len(transporter.works)), block)
             cur_population[transporter.no].works = transporter.works
@@ -43,7 +40,7 @@ def fitness(individual):
     total_time = 0  # 모든 트랜스포터가 일을 마치는 시간을 계산
     DOCK = [0, 0]
     fitness_score = 0
-    empty_tp_score = 500
+    empty_tp_score = 100000
 
     for transporter in individual:
         cur_time = START_TIME  # 작업을 시작할 수 있는 가장 빠른 시간
@@ -60,11 +57,14 @@ def fitness(individual):
 
             dist2 = math.dist(block.start_pos, block.end_pos) / 1000
             cur_time += dist2 / transporter.work_speed  # 블록을 운반하는데 걸리는 시간 추가
+
+            if cur_time > block.end_time: # 운반을 끝내는데 걸린 시간이 작업종료시간을 만족하지 않는다면 해는 유효하지 않음
+                return 0.0
             cur_pos = block.end_pos  # 현재 위치를 블록의 종료 위치로 업데이트
 
         total_time = max(total_time, cur_time)  # 모든 트랜스포터가 일을 마치는 시간 업데이트
 
-    fitness_score += total_time * 10
+    fitness_score += total_time * 1
 
     if total_time > FINISH_TIME:  # 전체 작업 완료 시간이 18시를 초과하면 해당 해는 유효하지 않음
         return 0.0
@@ -201,6 +201,7 @@ def run_GA():
     # 진화 시작
     for generation in range(GENERATION_SIZE):
         # 각 개체의 적합도 계산
+        a = 1
         fitness_values = [fitness(p) for p in population]
 
         # 현재 세대에서 가장 우수한 개체 출력
@@ -229,13 +230,13 @@ def run_GA():
                 offspring.append(child1)
             if child2 and len(offspring) < crossover_size:
                 offspring.append(child2)
-
+        for individual in offspring:
+            mutation(individual, MUTATION_RATE)
 
         # 다음 세대 개체집단 생성
         population = elites + offspring
         # 돌연변이 연산 수행
-        for individual in population:
-            mutation(individual, MUTATION_RATE)
+
 
     # 최종 세대에서 가장 우수한 개체 출력
     fitness_values = [fitness(p) for p in population]

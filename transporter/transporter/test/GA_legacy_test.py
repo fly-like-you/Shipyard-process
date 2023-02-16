@@ -1,7 +1,6 @@
 import unittest
-from GA_legacy import *
+from transporter.transporter.GA_legacy import *
 import sys
-from GA_refactoring import fitness
 
 class legacy_ga_test(unittest.TestCase):
     initial_individual = generate_population(1)

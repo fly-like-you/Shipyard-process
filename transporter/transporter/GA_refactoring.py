@@ -1,6 +1,6 @@
 # 새로 작성한 GA
 import copy
-from create_data.FileManager import FileManager
+from transporter.transporter.create_data.FileManager import FileManager
 import random
 import math
 import numpy as np
@@ -260,8 +260,8 @@ if __name__ == "__main__":
 
     filemanager = FileManager()
 
-    transporter_container = filemanager.get_transporters(transporter_path)
-    block_container = filemanager.load_block_data(block_path, 100)
+    transporter_container = filemanager.load_transporters(transporter_path)
+    block_container = filemanager.create_block_from_map_file(block_path, 100)
 
     ga = GA(transporter_container, block_container, config_dict)
     ga.run_GA()

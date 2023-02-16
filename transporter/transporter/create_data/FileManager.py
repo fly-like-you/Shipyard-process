@@ -13,7 +13,7 @@ class FileManager:
         self.transporters = []
         self.nodes = []
 
-    def get_transporters(self, file_path):
+    def load_transporters(self, file_path):
         file = pathlib.Path(file_path)
         print(file_path)
 
@@ -28,7 +28,7 @@ class FileManager:
             return -1
 
 
-    def load_block_data(self, file_path, BLOCK_NUM):
+    def create_block_from_map_file(self, file_path, BLOCK_NUM):
 
         file = pathlib.Path(file_path)
 
@@ -79,9 +79,28 @@ class FileManager:
         else:
             print(-1)
 
+    def load_block_data(self, file_path, BLOCK_NUM=100):
+        block_df = pd.read_csv(file_path)
+
+        for i in range(BLOCK_NUM):
+            block_list = []
+            df = pd.read_csv(file_path)
+            for i, (no, weight, start_node, end_node, start_time, end_time, start_pos, end_pos) in enumerate(
+                    zip(df['no'], df['weight'], df['start_node'], df['end_node'], df['start_time'], df['end_time'],
+                        df['start_pos'], df['end_pos'])):
+                if i >= BLOCK_NUM:
+                    break
+                start_pos = [int(x) for x in start_pos.strip('[]').split(',')]
+                end_pos = [int(x) for x in end_pos.strip('[]').split(',')]
+                block = Block(no, weight, start_node, end_node, start_time, end_time, start_pos, end_pos)
+                block_list.append(block)
+            return block_list
+
+
 
 
 if __name__ == '__main__':
     blocks = FileManager()
-    block_path = os.path.join(os.getcwd(), 'data', 'map.xlsx')
+    map_path = os.path.join(os.getcwd(), 'data', 'map.xlsx')
+    block_path = os.path.join(os.getcwd(), 'data', 'blocks.csv')
     block_container = blocks.load_block_data(block_path)

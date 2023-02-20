@@ -239,7 +239,7 @@ def fitness(individual):
     total_time = 0  # 모든 트랜스포터가 일을 마치는 시간을 계산
     DOCK = [0, 0]
     fitness_score = 0
-    empty_tp_score = 100000
+    empty_tp_score = 1000
     for transporter in individual:
         if any(work.weight > transporter.available_weight for work in transporter.works):
             return 0.0
@@ -300,20 +300,20 @@ def run_ga(transporters, blocks):
             mutation_1()
         elif rand < 0.50:
             mutation_2()
-        elif result_population is not None and rand < 0.75:
-            for i, cur_trans in enumerate(result_population):
-                if cur_trans.works:
-                    temp = copy.deepcopy(result_population)
-                    flag = True
-
-                    while temp[i].works:
-                        cur_block = temp[i].works.pop()
-                        if not can_insert(i, cur_block):
-                            flag = False
-                            break
-
-                    if flag:
-                        result_population = copy.deepcopy(temp)
+        # elif result_population is not None and rand < 0.75:
+        #     for i, cur_trans in enumerate(result_population):
+        #         if cur_trans.works:
+        #             temp = copy.deepcopy(result_population)
+        #             flag = True
+        #
+        #             while temp[i].works:
+        #                 cur_block = temp[i].works.pop()
+        #                 if not can_insert(i, cur_block):
+        #                     flag = False
+        #                     break
+        #
+        #             if flag:
+        #                 result_population = copy.deepcopy(temp)
         else:
             mutation_3(0.9)
 
@@ -350,16 +350,16 @@ def run_ga(transporters, blocks):
 
             if flag:
                 result_population = copy.deepcopy(temp)
-    for trans in result_population:
-        if trans.works:
-            min_dist = math.inf
-            tsp_route = []
-            visited = [False] * len(trans.works)
-            arr = copy.deepcopy(trans)
-            arr.works = []
-            cnt = 0
-            perm(0, len(trans.works), arr)
-            trans.works = tsp_route[::]  # tsp_route를 현재 트랜스포터의 작업 순서로
+    # for trans in result_population:
+    #     if trans.works:
+    #         min_dist = math.inf
+    #         tsp_route = []
+    #         visited = [False] * len(trans.works)
+    #         arr = copy.deepcopy(trans)
+    #         arr.works = []
+    #         cnt = 0
+    #         perm(0, len(trans.works), arr)
+    #         trans.works = tsp_route[::]  # tsp_route를 현재 트랜스포터의 작업 순서로
     optimization_count = 0
     work = 0
     optimization_time = 0
@@ -373,26 +373,11 @@ def run_ga(transporters, blocks):
     print('최종 결과:', optimization_count, optimization_time, work)
     # given
     transporter_list = result_population
-    performance = (abs(initital_count - optimization_count) / initital_count + abs(initital_time - optimization_time) / initital_time) * 100
+
+    return transporter_list
 
 
-    # for i in transporter_list:
-    #     if i.works:
-    #         print('transporter')
-    #         print(i)
-    #         print('blocks')
-    #         for j in i.works:
-    #             print(j)
-    #
-    #         print()
-
-    return transporter_list, performance
-
-
-
-
-
-if __name__ == '__main__':
+def GA_legacy():
     file_manager = FileManager()
 
     transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
@@ -401,7 +386,9 @@ if __name__ == '__main__':
     transporter_container = file_manager.load_transporters(transporter_path)
     block_container = file_manager.load_block_data(block_path, 100)
 
-    for i in block_container:
-        print(i)
-    run_ga(transporter_container, block_container)
+    return run_ga(transporter_container, block_container)
+
+
+if __name__ == '__main__':
+    GA_legacy()
 

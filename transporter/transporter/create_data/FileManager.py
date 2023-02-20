@@ -15,7 +15,6 @@ class FileManager:
 
     def load_transporters(self, file_path):
         file = pathlib.Path(file_path)
-        print(file_path)
 
         if file.exists():
             df = pd.read_csv(file)

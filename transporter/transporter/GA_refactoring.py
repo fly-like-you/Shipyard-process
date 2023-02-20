@@ -42,7 +42,7 @@ class GA:
         total_time = 0  # 모든 트랜스포터가 일을 마치는 시간을 계산
         DOCK = [0, 0]
         fitness_score = 0
-        empty_tp_score = 100000
+        empty_tp_score = 1000
         for transporter in individual:
             if any(work.weight > transporter.available_weight for work in transporter.works):
                 return 0.0

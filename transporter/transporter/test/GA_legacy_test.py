@@ -1,6 +1,6 @@
 import unittest
-from transporter.transporter.GA_legacy import *
-import sys
+from transporter.transporter.GA_legacy.GA_legacy import *
+
 
 class legacy_ga_test(unittest.TestCase):
     initial_individual = generate_population(1)

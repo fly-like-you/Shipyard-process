@@ -1,10 +1,25 @@
 # 새로 작성한 GA
 import copy
 from transporter.transporter.create_data.FileManager import FileManager
+from transporter.transporter.GA_refactoring.Mutation import Mutation
+from transporter.transporter.GA_refactoring.Selection import Selection
 import random
 import math
 import numpy as np
 import os
+
+config_dict = {
+    'POPULATION_SIZE': 100,
+    'GENERATION_SIZE': 1000,
+    'LOAD_REST_TIME': 0.5,
+    'ELITISM_RATE': 0.5,
+    'MUTATION_RATE': 0.2,
+    'START_TIME': 9,
+    'FINISH_TIME': 18,
+    'BLOCKS': 100,
+}
+transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
+block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'map.xlsx')
 
 
 class SetSizeException(Exception):
@@ -12,7 +27,7 @@ class SetSizeException(Exception):
 
 
 class GA:
-    def __init__(self, transport_container, block_container, config_dict):
+    def __init__(self, transport_container, block_container, config_dict, selection_method='roulette'):
         self.transport_container = transport_container
         self.block_container = block_container
         self.POPULATION_SIZE = config_dict['POPULATION_SIZE']
@@ -24,10 +39,14 @@ class GA:
         self.FINISH_TIME = config_dict['FINISH_TIME']
         self.BLOCKS = config_dict['BLOCKS']
 
+        self.selection_method = selection_method
+
     def generate_population(self, size, transporter_li, block_li):
         population = []
-        for gen in range(size):
+
+        while len(population) < size:
             cur_population = copy.deepcopy(transporter_li)
+
             for block in block_li:
                 transporter_candidates = [t for t in cur_population if t.available_weight >= block.weight]
 
@@ -35,7 +54,8 @@ class GA:
                 transporter.works.insert(random.randint(0, len(transporter.works)), block)
                 cur_population[transporter.no].works = transporter.works
 
-            population.append(cur_population)
+            if self.fitness(cur_population) > 0:
+                population.append(cur_population)
         return population
 
     def fitness(self, individual):
@@ -51,14 +71,10 @@ class GA:
             cur_time = self.START_TIME  # 작업을 시작할 수 있는 가장 빠른 시간
             cur_pos = DOCK  # 현재 위치는 도크
 
-            # if not transporter.works:
-            #     fitness_score += empty_tp_score
-            #     if transporter.available_weight > 500:
-            #         fitness_score += empty_tp_score
-            if transporter.available_weight > 500:
+            if not transporter.works:
                 fitness_score += empty_tp_score
-                if not transporter.works:
-                    fitness_score += empty_tp_score
+                if transporter.available_weight > 500:
+                    fitness_score += empty_tp_score // 100
 
             for block in transporter.works:
                 dist = math.dist(cur_pos, block.start_pos) / 1000  # 이전 위치에서 현재 블록까지 이동한 거리
@@ -81,20 +97,6 @@ class GA:
             return 0.0
 
         return fitness_score  # 전체 작업 완료 시간의 역수를 반환하여 적합도 계산
-
-    def selection(self, population, fitness_values):
-        parents = []
-        total_fitness = sum(fitness_values)
-
-        probabilities = [f / total_fitness for f in fitness_values]
-        cumulative_prob = [sum(probabilities[:i + 1]) for i in range(len(probabilities))]
-        for _ in range(len(population)):
-            rand = random.random()
-            for i in range(len(cumulative_prob)):
-                if rand <= cumulative_prob[i]:
-                    parents.append(population[i])
-                    break
-        return parents
 
     def crossover(self, parent1, parent2, empty_transporters):
         child1 = copy.deepcopy(empty_transporters)
@@ -169,70 +171,30 @@ class GA:
         for transporter in individual:
             if transporter.works:
                 work_tp_count += 1
-        return f"블록 적합성 통과, 현재 작업하고 있는 트랜스포터 대수: {work_tp_count}대"
+        return work_tp_count
 
     # 트랜스 포터의 대수는 5대 이상이어야함 (인덱스 오류뜸)
-    def mutation(self, individual, mutationRate):
-        transporter_li = [t for t in individual if len(t.works) > 0]
-        transporter_li.sort(key=lambda t: len(t.works))
-        self.test_tp_data(individual)
-
-        for tp_index in range(len(transporter_li) // 2):
-            if random.random() < mutationRate:
-
-                min_len_trans = random.choice(transporter_li[:3])
-                max_len_trans = random.choice(transporter_li[-3:])
-
-                if min_len_trans == max_len_trans:
-                    continue
-                max_len_trans_index = individual.index(max_len_trans)
-                min_len_trans_index = individual.index(min_len_trans)
-
-                max_len_trans_works = individual[max_len_trans_index].works
-                min_len_trans_works = individual[min_len_trans_index].works
-
-                if not min_len_trans_works:
-                    continue
-                insert_block = random.choice(min_len_trans_works)
-
-                max_len_trans_works.insert(random.randint(0, len(max_len_trans_works) - 1), insert_block)
-                individual[min_len_trans_index].works = [b for b in min_len_trans_works if b.no != insert_block.no]
-        self.test_tp_data(individual)
-
-    def mutation2(self, individual, mutationRate):
-        def swap_transporter_works(transporter1, transporter2):
-            temp_works = transporter1.works
-            transporter1.works = transporter2.works
-            transporter2.works = temp_works
-
-        for i in range(len(individual)):
-            if random.random() < mutationRate:
-                j, k = random.sample(range(len(individual)), 2)
-
-                # 선택된 두 요소의 값을 비교하여 작은 값이 j가 되도록 함
-                if individual[j].available_weight * individual[j].work_speed > individual[k].available_weight * \
-                        individual[k].work_speed:
-                    j, k = k, j
-
-
-                # 선택된 두 트랜스포터의 작업 목록을 서로 스왑
-                swap_transporter_works(individual[idx1], individual[idx2])
 
     def run_GA(self):
-
+        mutation = Mutation(self.MUTATION_RATE)
+        selection = Selection(self.selection_method)
         population = self.generate_population(self.POPULATION_SIZE, self.transport_container, self.block_container)
-        print(self.print_individual(population[0]))
+        work_tp_count_list = []
+
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
             # 각 개체의 적합도 계산
             fitness_values = [self.fitness(p) for p in population]
+            for idx, trash in enumerate(fitness_values):
+                if trash == 0.0:
+                    population[idx] = self.generate_population(1, self.transport_container, self.block_container)[0]
+                    fitness_values[idx] = self.fitness(population[idx])
 
             # 현재 세대에서 가장 우수한 개체 출력
             best_individual = population[np.argmax(fitness_values)]
-
+            work_tp_count_list.append(self.print_individual(best_individual))
             print(
-                f'Generation {generation + 1} best individual: {self.print_individual(best_individual)}, best_fitness_value: {np.max(fitness_values)}')
-
+                f'Generation {generation + 1} best individual: {work_tp_count_list[generation]}, best_fitness_value: {np.max(fitness_values)}')
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
             elites = [population[i] for i in np.argsort(fitness_values)[::-1][:elite_size]]
@@ -242,7 +204,7 @@ class GA:
             offspring = []
             while len(offspring) < crossover_size:
                 # 부모 개체 선택
-                parents = self.selection(population, fitness_values)
+                parents = selection.select(population, fitness_values)
                 self.test_data(parents)
                 parent1, parent2 = random.sample(parents, k=2)
 
@@ -253,43 +215,38 @@ class GA:
                     offspring.append(child1)
                 if child2 and len(offspring) < crossover_size:
                     offspring.append(child2)
-            for individual in offspring:
-                self.mutation(individual, self.MUTATION_RATE)
+            mutation.apply_mutation(offspring)
 
             # 다음 세대 개체 집단 생성
             population = elites + offspring
+
             # 돌연 변이 연산 수행
 
         # 최종 세대에서 가장 우수한 개체 출력
         fitness_values = [self.fitness(p) for p in population]
         best_individual = population[np.argmax(fitness_values)]
         print(
-            f'Final generation best individual: {self.print_individual(best_individual)}, best_fitness_value: {np.max(fitness_values)}')
-        print(self.print_individual(population[0]))
-        return best_individual
+            f'Final generation best individual: {work_tp_count_list[-1]}, best_fitness_value: {np.max(fitness_values)}')
 
+        result = dict()
+        result['best_individual'] = best_individual
+        result['work_tp_count'] = work_tp_count_list
+        return result
+
+
+
+def print_tp(individual):
+    for i in individual:
+        if i.works:
+            print("no: ", i.no, "available_weight: ", i.available_weight, "works_len: ", len(i.works))
 
 if __name__ == "__main__":
-    config_dict = {
-        'POPULATION_SIZE': 100,
-        'GENERATION_SIZE': 300,
-        'LOAD_REST_TIME': 0.5,
-        'ELITISM_RATE': 0.5,
-        'MUTATION_RATE': 0.4,
-        'START_TIME': 9,
-        'FINISH_TIME': 18,
-        'BLOCKS': 100,
-    }
-    transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
-    block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'map.xlsx')
-
     filemanager = FileManager()
 
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.create_block_from_map_file(block_path, 100)
 
     ga = GA(transporter_container, block_container, config_dict)
-    tp = ga.run_GA()
-    for i in tp:
-        print(i)
-
+    tp = ga.run_GA()['best_individual']
+    tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
+    print_tp(tp)

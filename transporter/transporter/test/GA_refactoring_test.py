@@ -1,7 +1,7 @@
 import os
 import unittest
 from transporter.transporter.Configuration import Configuration
-from transporter.transporter.GA_refactoring import GA
+from transporter.transporter.GA_refactoring.GA_refactoring import GA
 from transporter.transporter.create_data.FileManager import FileManager
 # 박준호가 작성한 GA_refactoring 파일의 코드를 테스트하는 코드입니다.
 
@@ -45,7 +45,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_결과_데이터_중량_무결성(self):
         # given
-        result_individual = MyTestCase.ga_result
+        result_individual = MyTestCase.ga_result['best_individual']
         # when
         for transporter in result_individual:
             if any(work.weight > transporter.available_weight for work in transporter.works):

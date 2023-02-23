@@ -1,9 +1,7 @@
 import os
 import copy
-import time
 import math
 import random
-from transporter.transporter.GA_refactoring import GA
 from transporter.transporter.create_data.FileManager import FileManager
 
 # 상수 정의
@@ -382,9 +380,14 @@ def GA_legacy():
     return run_ga(transporter_container, block_container)
 
 
+def print_tp(individual):
+    for i in individual:
+        if i.works:
+            print("no: ", i.no, "available_weight: ", i.available_weight, "works_len: ", len(i.works))
+
 if __name__ == '__main__':
     tp = GA_legacy()
-    for i in tp:
-        print(i)
+    tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
+    print_tp(tp)
 
 

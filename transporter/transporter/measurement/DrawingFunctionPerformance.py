@@ -1,7 +1,4 @@
-import time
-import matplotlib.pyplot as plt
-
-from transporter.transporter.GA_legacy import fitness
+from transporter.transporter.GA_legacy.GA_legacy import fitness
 import time
 import matplotlib.pyplot as plt
 

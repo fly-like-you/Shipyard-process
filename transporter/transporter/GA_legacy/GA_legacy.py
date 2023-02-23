@@ -12,7 +12,7 @@ LOAD_REST_TIME = 0.5
 
 
 
-def evaluation(transporter):
+def evaluation2(transporter):
     '''
         if arr이 실현가능한 해:
             return 운반에 걸리는 총 시간 (True를 의미)
@@ -227,34 +227,34 @@ def perm(idx, length, arr):  # 순열, 백트래킹
                 perm(idx + 1, length, arr)
                 visited[i] = False
             arr.works.pop()
-def fitness(individual):
+def evaluation(transporter):
     total_time = 0  # 모든 트랜스포터가 일을 마치는 시간을 계산
     DOCK = [0, 0]
     fitness_score = 0
     empty_tp_score = 1000
-    for transporter in individual:
-        if any(work.weight > transporter.available_weight for work in transporter.works):
+    if any(work.weight > transporter.available_weight for work in transporter.works):
+        return 0.0
+
+    cur_time = START_TIME  # 작업을 시작할 수 있는 가장 빠른 시간
+    cur_pos = DOCK  # 현재 위치는 도크
+
+    if not transporter.works:
+        fitness_score += empty_tp_score
+        if transporter.available_weight > 500:
+            fitness_score += empty_tp_score // 100
+
+    for block in transporter.works:
+        dist = math.dist(cur_pos, block.start_pos) / 1000  # 이전 위치에서 현재 블록까지 이동한 거리
+        cur_time += dist / transporter.empty_speed  # 이동 시간 추가
+
+        cur_time = max(cur_time, block.start_time)  # 블록의 작업 시작 시간 이전에 도착한 경우, 해당 시간까지 대기
+
+        dist2 = math.dist(block.start_pos, block.end_pos) / 1000
+        cur_time += dist2 / transporter.work_speed  # 블록을 운반하는데 걸리는 시간 추가
+
+        if cur_time > block.end_time:  # 운반을 끝내는데 걸린 시간이 작업종료시간을 만족하지 않는다면 해는 유효하지 않음
             return 0.0
-
-    for transporter in individual:
-        cur_time = START_TIME  # 작업을 시작할 수 있는 가장 빠른 시간
-        cur_pos = DOCK  # 현재 위치는 도크
-
-        if not transporter.works:
-            fitness_score += empty_tp_score
-
-        for block in transporter.works:
-            dist = math.dist(cur_pos, block.start_pos) / 1000  # 이전 위치에서 현재 블록까지 이동한 거리
-            cur_time += dist / transporter.empty_speed  # 이동 시간 추가
-
-            cur_time = max(cur_time, block.start_time)  # 블록의 작업 시작 시간 이전에 도착한 경우, 해당 시간까지 대기
-
-            dist2 = math.dist(block.start_pos, block.end_pos) / 1000
-            cur_time += dist2 / transporter.work_speed  # 블록을 운반하는데 걸리는 시간 추가
-
-            if cur_time > block.end_time:  # 운반을 끝내는데 걸린 시간이 작업종료시간을 만족하지 않는다면 해는 유효하지 않음
-                return 0.0
-            cur_pos = block.end_pos  # 현재 위치를 블록의 종료 위치로 업데이트
+        cur_pos = block.end_pos  # 현재 위치를 블록의 종료 위치로 업데이트
 
         total_time = max(total_time, cur_time)  # 모든 트랜스포터가 일을 마치는 시간 업데이트
 
@@ -264,6 +264,7 @@ def fitness(individual):
         return 0.0
 
     return fitness_score  # 전체 작업 완료 시간의 역수를 반환하여 적합도 계산
+
 def run_ga(transporters, blocks):
     global population, cnt, temp, flag, trans, min_dist, tsp_route, visited, arr
     population = generate_population(1, transporters, blocks)
@@ -274,7 +275,6 @@ def run_ga(transporters, blocks):
         if i.works:
             initital_count += 1
             initital_time += evaluation(i)
-    print('initiial fitness_value:', fitness(population[0]))
     print('random: ', initital_count, initital_time)
     '''
             GA
@@ -291,20 +291,20 @@ def run_ga(transporters, blocks):
             mutation_1()
         elif rand < 0.50:
             mutation_2()
-        # elif result_population is not None and rand < 0.75:
-        #     for i, cur_trans in enumerate(result_population):
-        #         if cur_trans.works:
-        #             temp = copy.deepcopy(result_population)
-        #             flag = True
-        #
-        #             while temp[i].works:
-        #                 cur_block = temp[i].works.pop()
-        #                 if not can_insert(i, cur_block):
-        #                     flag = False
-        #                     break
-        #
-        #             if flag:
-        #                 result_population = copy.deepcopy(temp)
+        elif result_population is not None and rand < 0.75:
+            for i, cur_trans in enumerate(result_population):
+                if cur_trans.works:
+                    temp = copy.deepcopy(result_population)
+                    flag = True
+
+                    while temp[i].works:
+                        cur_block = temp[i].works.pop()
+                        if not can_insert(i, cur_block):
+                            flag = False
+                            break
+
+                    if flag:
+                        result_population = copy.deepcopy(temp)
         else:
             mutation_3(0.9)
 
@@ -328,19 +328,19 @@ def run_ga(transporters, blocks):
         if stop == 500:
             break
 
-    for i, cur_trans in enumerate(result_population):
-        if cur_trans.works:
-            temp = copy.deepcopy(result_population)
-            flag = True
-
-            while temp[i].works:
-                cur_block = temp[i].works.pop()
-                if not can_insert(i, cur_block):
-                    flag = False
-                    break
-
-            if flag:
-                result_population = copy.deepcopy(temp)
+    # for i, cur_trans in enumerate(result_population):
+    #     if cur_trans.works:
+    #         temp = copy.deepcopy(result_population)
+    #         flag = True
+    #
+    #         while temp[i].works:
+    #             cur_block = temp[i].works.pop()
+    #             if not can_insert(i, cur_block):
+    #                 flag = False
+    #                 break
+    #
+    #         if flag:
+    #             result_population = copy.deepcopy(temp)
     # for trans in result_population:
     #     if trans.works:
     #         min_dist = math.inf
@@ -359,13 +359,13 @@ def run_ga(transporters, blocks):
             optimization_count += 1
             work += len(i.works)
             optimization_time += evaluation(i)
-    print('best fitness_value:', fitness(result_population))
 
     print('최종 결과:', optimization_count, optimization_time, work)
     # given
-    transporter_list = result_population
+    result = dict()
+    result['best_individual'] = result_population
 
-    return transporter_list
+    return result
 
 
 def GA_legacy():
@@ -386,8 +386,13 @@ def print_tp(individual):
             print("no: ", i.no, "available_weight: ", i.available_weight, "works_len: ", len(i.works))
 
 if __name__ == '__main__':
-    tp = GA_legacy()
-    tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
+    tp = GA_legacy()['best_individual']
+
     print_tp(tp)
+    for i, transporter in enumerate(tp):
+        if transporter.works:
+
+            evaluation(transporter)
+
 
 

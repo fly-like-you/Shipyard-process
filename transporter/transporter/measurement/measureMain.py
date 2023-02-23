@@ -27,7 +27,7 @@ dfp = DrawingFunctionPerformance(
     run_ga,
     (),
     (transporter_container, block_container),
-    10
+    5
 )
 
 dfp.draw_performance_graph()

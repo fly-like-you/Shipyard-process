@@ -10,14 +10,7 @@ from transporter.transporter.create_data.FileManager import FileManager
 FINISH_TIME = 18
 START_TIME = 9
 LOAD_REST_TIME = 0.5
-def measure_execution_time(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        print("Execution time of function '{}': {} seconds".format(func.__name__, end_time - start_time))
-        return result
-    return wrapper
+
 
 
 
@@ -51,7 +44,8 @@ def evaluation(transporter):
 
         # 트랜스포터가 현재 위치에서 해당 블록을 목표지점까지 가져다 놓는데 걸리는 시간
         finish_time = pick_up_time + prev_to_start_time + start_to_end_time
-
+        if finish_time > FINISH_TIME:
+            return False
         flag = True
         for start, end in times:
             # 안의 판별식이 모두 False이면 불가능한해이므로 리턴
@@ -272,7 +266,6 @@ def fitness(individual):
         return 0.0
 
     return fitness_score  # 전체 작업 완료 시간의 역수를 반환하여 적합도 계산
-@measure_execution_time
 def run_ga(transporters, blocks):
     global population, cnt, temp, flag, trans, min_dist, tsp_route, visited, arr
     population = generate_population(1, transporters, blocks)
@@ -390,5 +383,8 @@ def GA_legacy():
 
 
 if __name__ == '__main__':
-    GA_legacy()
+    tp = GA_legacy()
+    for i in tp:
+        print(i)
+
 

@@ -51,8 +51,14 @@ class GA:
             cur_time = self.START_TIME  # 작업을 시작할 수 있는 가장 빠른 시간
             cur_pos = DOCK  # 현재 위치는 도크
 
-            if not transporter.works:
+            # if not transporter.works:
+            #     fitness_score += empty_tp_score
+            #     if transporter.available_weight > 500:
+            #         fitness_score += empty_tp_score
+            if transporter.available_weight > 500:
                 fitness_score += empty_tp_score
+                if not transporter.works:
+                    fitness_score += empty_tp_score
 
             for block in transporter.works:
                 dist = math.dist(cur_pos, block.start_pos) / 1000  # 이전 위치에서 현재 블록까지 이동한 거리
@@ -69,7 +75,7 @@ class GA:
 
             total_time = max(total_time, cur_time)  # 모든 트랜스포터가 일을 마치는 시간 업데이트
 
-        fitness_score += total_time * 1
+        fitness_score += 1 / total_time * 1
 
         if total_time > self.FINISH_TIME:  # 전체 작업 완료 시간이 18시를 초과하면 해당 해는 유효하지 않음
             return 0.0
@@ -193,6 +199,25 @@ class GA:
                 individual[min_len_trans_index].works = [b for b in min_len_trans_works if b.no != insert_block.no]
         self.test_tp_data(individual)
 
+    def mutation2(self, individual, mutationRate):
+        def swap_transporter_works(transporter1, transporter2):
+            temp_works = transporter1.works
+            transporter1.works = transporter2.works
+            transporter2.works = temp_works
+
+        for i in range(len(individual)):
+            if random.random() < mutationRate:
+                j, k = random.sample(range(len(individual)), 2)
+
+                # 선택된 두 요소의 값을 비교하여 작은 값이 j가 되도록 함
+                if individual[j].available_weight * individual[j].work_speed > individual[k].available_weight * \
+                        individual[k].work_speed:
+                    j, k = k, j
+
+
+                # 선택된 두 트랜스포터의 작업 목록을 서로 스왑
+                swap_transporter_works(individual[idx1], individual[idx2])
+
     def run_GA(self):
 
         population = self.generate_population(self.POPULATION_SIZE, self.transport_container, self.block_container)
@@ -247,7 +272,7 @@ class GA:
 if __name__ == "__main__":
     config_dict = {
         'POPULATION_SIZE': 100,
-        'GENERATION_SIZE': 100,
+        'GENERATION_SIZE': 300,
         'LOAD_REST_TIME': 0.5,
         'ELITISM_RATE': 0.5,
         'MUTATION_RATE': 0.4,
@@ -264,4 +289,7 @@ if __name__ == "__main__":
     block_container = filemanager.create_block_from_map_file(block_path, 100)
 
     ga = GA(transporter_container, block_container, config_dict)
-    ga.run_GA()
+    tp = ga.run_GA()
+    for i in tp:
+        print(i)
+

@@ -291,20 +291,20 @@ def run_ga(transporters, blocks):
             mutation_1()
         elif rand < 0.50:
             mutation_2()
-        elif result_population is not None and rand < 0.75:
-            for i, cur_trans in enumerate(result_population):
-                if cur_trans.works:
-                    temp = copy.deepcopy(result_population)
-                    flag = True
-
-                    while temp[i].works:
-                        cur_block = temp[i].works.pop()
-                        if not can_insert(i, cur_block):
-                            flag = False
-                            break
-
-                    if flag:
-                        result_population = copy.deepcopy(temp)
+        # elif result_population is not None and rand < 0.75:
+        #     for i, cur_trans in enumerate(result_population):
+        #         if cur_trans.works:
+        #             temp = copy.deepcopy(result_population)
+        #             flag = True
+        #
+        #             while temp[i].works:
+        #                 cur_block = temp[i].works.pop()
+        #                 if not can_insert(i, cur_block):
+        #                     flag = False
+        #                     break
+        #
+        #             if flag:
+        #                 result_population = copy.deepcopy(temp)
         else:
             mutation_3(0.9)
 
@@ -328,19 +328,19 @@ def run_ga(transporters, blocks):
         if stop == 500:
             break
 
-    # for i, cur_trans in enumerate(result_population):
-    #     if cur_trans.works:
-    #         temp = copy.deepcopy(result_population)
-    #         flag = True
-    #
-    #         while temp[i].works:
-    #             cur_block = temp[i].works.pop()
-    #             if not can_insert(i, cur_block):
-    #                 flag = False
-    #                 break
-    #
-    #         if flag:
-    #             result_population = copy.deepcopy(temp)
+    for i, cur_trans in enumerate(result_population):
+        if cur_trans.works:
+            temp = copy.deepcopy(result_population)
+            flag = True
+
+            while temp[i].works:
+                cur_block = temp[i].works.pop()
+                if not can_insert(i, cur_block):
+                    flag = False
+                    break
+
+            if flag:
+                result_population = copy.deepcopy(temp)
     # for trans in result_population:
     #     if trans.works:
     #         min_dist = math.inf
@@ -371,7 +371,7 @@ def run_ga(transporters, blocks):
 def GA_legacy():
     file_manager = FileManager()
 
-    transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
+    transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter(len10).csv')
     block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'blocks.csv')
 
     transporter_container = file_manager.load_transporters(transporter_path)

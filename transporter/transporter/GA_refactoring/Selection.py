@@ -14,23 +14,26 @@ class Selection:
             raise ValueError(f"Invalid selection method: {self.method}")
 
     def roulette_selection(self, population, fitness_values):
-        parents = []
+        parents = set()
         total_fitness = sum(fitness_values)
 
         probabilities = [f / total_fitness for f in fitness_values]
         cumulative_prob = [sum(probabilities[:i + 1]) for i in range(len(probabilities))]
-        for _ in range(len(population)):
+        while len(parents) < len(population) // 10:
             rand = random.random()
             for i in range(len(cumulative_prob)):
                 if rand <= cumulative_prob[i]:
-                    parents.append(population[i])
+                    parents.add(tuple(population[i]))
                     break
         return parents
 
-    def tournament_selection(self, population, fitness_values, tournament_size=2):
-        winners = []
-        for i in range(len(population)):
+    def tournament_selection(self, population, fitness_values, tournament_size=20):
+        winners = set()
+
+        while len(winners) < len(population) // 10:
             participants = random.sample(population, tournament_size)
             winner = max(participants, key=lambda x: fitness_values[population.index(x)])
-            winners.append(winner)
+            winners.add(tuple(winner))
+
         return winners
+

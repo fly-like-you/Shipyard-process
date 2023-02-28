@@ -10,10 +10,10 @@ import os
 
 config_dict = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 1000,
-    'LOAD_REST_TIME': 0.5,
-    'ELITISM_RATE': 0.5,
-    'MUTATION_RATE': 0.2,
+    'GENERATION_SIZE': 100,
+    'LOAD_REST_TIME': 0.2,
+    'ELITISM_RATE': 0.4,
+    'MUTATION_RATE': 0.6,
     'START_TIME': 9,
     'FINISH_TIME': 18,
     'BLOCKS': 100,
@@ -88,6 +88,7 @@ class GA:
                 if cur_time > block.end_time:  # 운반을 끝내는데 걸린 시간이 작업종료시간을 만족하지 않는다면 해는 유효하지 않음
                     return 0.0
                 cur_pos = block.end_pos  # 현재 위치를 블록의 종료 위치로 업데이트
+                cur_time += self.LOAD_REST_TIME
 
             total_time = max(total_time, cur_time)  # 모든 트랜스포터가 일을 마치는 시간 업데이트
 
@@ -180,15 +181,12 @@ class GA:
         selection = Selection(self.selection_method)
         population = self.generate_population(self.POPULATION_SIZE, self.transport_container, self.block_container)
         work_tp_count_list = []
-
+        overlap_fit_val_list = []
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
             # 각 개체의 적합도 계산
             fitness_values = [self.fitness(p) for p in population]
-            for idx, trash in enumerate(fitness_values):
-                if trash == 0.0:
-                    population[idx] = self.generate_population(1, self.transport_container, self.block_container)[0]
-                    fitness_values[idx] = self.fitness(population[idx])
+            overlap_fit_val_list.append(len(set(fitness_values)))
 
             # 현재 세대에서 가장 우수한 개체 출력
             best_individual = population[np.argmax(fitness_values)]
@@ -231,6 +229,7 @@ class GA:
         result = dict()
         result['best_individual'] = best_individual
         result['work_tp_count'] = work_tp_count_list
+        result['overlap_fit_val_len'] = overlap_fit_val_list
         return result
 
 
@@ -246,7 +245,7 @@ if __name__ == "__main__":
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.create_block_from_map_file(block_path, 100)
 
-    ga = GA(transporter_container, block_container, config_dict)
+    ga = GA(transporter_container, block_container, config_dict, selection_method='roulette')
     tp = ga.run_GA()['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
     print_tp(tp)

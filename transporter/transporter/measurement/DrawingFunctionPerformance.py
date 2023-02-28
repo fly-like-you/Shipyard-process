@@ -1,4 +1,3 @@
-from transporter.transporter.GA_legacy.GA_legacy import fitness
 import time
 import matplotlib.pyplot as plt
 

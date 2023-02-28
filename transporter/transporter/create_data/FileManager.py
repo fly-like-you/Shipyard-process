@@ -27,30 +27,21 @@ class FileManager:
             return -1
 
 
-    def create_block_from_map_file(self, file_path, BLOCK_NUM):
+    def create_block_from_map_file(self, file_path, BLOCK_NUM, weight_style='heavy'):
+        weight_list = [0.01, 0.06, 0.10, 0.18, 0.19, 0.20, 0.21, 0.06]
+
+        if weight_style == 'light':
+            weight_list.reverse()
+        elif weight_style == 'random':
+            weight_list = [1 for _ in range(1, 9)]
 
         file = pathlib.Path(file_path)
 
         if file.exists():
             df = pd.read_excel(file, engine='openpyxl')
             for i in range(1, BLOCK_NUM + 1):
-                w = random.random()
-                if w <= 0.07:
-                    w = random.randint(1, 50)
-                elif w <= 0.18:
-                    w = random.randint(50, 150)
-                elif w <= 0.29:
-                    w = random.randint(150, 250)
-                elif w <= 0.47:
-                    w = random.randint(250, 350)
-                elif w <= 0.66:
-                    w = random.randint(350, 450)
-                elif w <= 0.81:
-                    w = random.randint(450, 500)
-                elif w <= 0.92:
-                    w = random.randint(500, 600)
-                elif w <= 1:
-                    w = random.randint(600, 700)
+                weight_prob = random.choices(range(1, 9), weights=weight_list)
+                w = random.randint(weight_prob[0] * 100 - 100, weight_prob[0] * 100)
 
                 node1 = df.sample()
                 node2 = df.sample()
@@ -99,7 +90,11 @@ class FileManager:
 
 
 if __name__ == '__main__':
-    blocks = FileManager()
+    file_manager = FileManager()
     map_path = os.path.join(os.getcwd(), 'data', 'map.xlsx')
     block_path = os.path.join(os.getcwd(), 'data', 'blocks.csv')
-    block_container = blocks.load_block_data(block_path)
+    block_container = file_manager.create_block_from_map_file(map_path, 100, 'light')
+    block_weight_list = []
+
+
+    plot_histogram(block_weight_list, 700)

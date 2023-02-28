@@ -1,6 +1,6 @@
 from transporter.transporter.GA_refactoring.GA_refactoring import GA
 from transporter.transporter.Configuration import Configuration, transporter_path, block_path
-
+import random
 config_dict = {
     'POPULATION_SIZE': 100,  # 한 세대에서의 인구 수를 설정합니다.
     'GENERATION_SIZE': 1000,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
@@ -12,10 +12,12 @@ config_dict = {
     'BLOCKS': 100,  # 총 블록 수를 설정합니다. 최대 100개까지 설정가능합니다.
 }
 def Main():
-    config = Configuration(transporter_path, block_path, config_dict, selection_method='tournament')
 
-    ga = GA(config.transporter_container, config.block_container, config.get_GA_config(), config.selection_method)
-    return ga.run_GA()
+
+    # config = Configuration(transporter_path, block_path, config_dict, selection_method='tournament')
+    #
+    # ga = GA(config.transporter_container, config.block_container, config.get_GA_config(), config.selection_method)
+    # return ga.run_GA()
 
 
 Main()

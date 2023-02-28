@@ -51,8 +51,8 @@ def compareToLegacy():
 
 roulette_ga = GA(transporter_container, block_container, config_dict, selection_method='roulette')
 tournament_ga = GA(transporter_container, block_container, config_dict, selection_method='tournament')
-roulette_result = roulette_ga.run_GA()
-tournament_result = tournament_ga.run_GA()
+# roulette_result = roulette_ga.run_GA()
+# tournament_result = tournament_ga.run_GA()
 
 
 
@@ -80,5 +80,7 @@ def roulette_VS_tournament_overlap():
 
 
 if __name__ == '__main__':
-    roulette_VS_tournament()
-    roulette_VS_tournament_overlap()
+    weight_list = [0.01, 0.06, 0.10, 0.18, 0.19, 0.20, 0.21, 0.06]
+    weight_list.reverse()
+    print(weight_list)
+

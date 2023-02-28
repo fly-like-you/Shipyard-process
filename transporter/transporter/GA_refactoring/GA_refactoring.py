@@ -174,7 +174,6 @@ class GA:
                 work_tp_count += 1
         return work_tp_count
 
-    # 트랜스 포터의 대수는 5대 이상이어야함 (인덱스 오류뜸)
 
     def run_GA(self):
         mutation = Mutation(self.MUTATION_RATE)

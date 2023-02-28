@@ -97,4 +97,3 @@ if __name__ == '__main__':
     block_weight_list = []
 
 
-    plot_histogram(block_weight_list, 700)

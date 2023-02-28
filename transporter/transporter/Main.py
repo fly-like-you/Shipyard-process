@@ -12,7 +12,7 @@ config_dict = {
     'BLOCKS': 100,  # 총 블록 수를 설정합니다. 최대 100개까지 설정가능합니다.
 }
 def Main():
-
+    pass
 
     # config = Configuration(transporter_path, block_path, config_dict, selection_method='tournament')
     #

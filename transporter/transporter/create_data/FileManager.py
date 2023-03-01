@@ -93,7 +93,13 @@ if __name__ == '__main__':
     file_manager = FileManager()
     map_path = os.path.join(os.getcwd(), 'data', 'map.xlsx')
     block_path = os.path.join(os.getcwd(), 'data', 'blocks.csv')
-    block_container = file_manager.create_block_from_map_file(map_path, 100, 'light')
+    block_container = file_manager.load_block_data(block_path)
     block_weight_list = []
+
+    for block in block_container:
+        block_weight_list.append(block.weight)
+    from transporter.transporter.measurement.measureData import plot_histogram
+    plot_histogram(block_weight_list, 700)
+
 
 

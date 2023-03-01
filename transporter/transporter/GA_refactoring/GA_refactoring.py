@@ -10,7 +10,7 @@ import os
 
 config_dict = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 100,
+    'GENERATION_SIZE': 500,
     'LOAD_REST_TIME': 0.2,
     'ELITISM_RATE': 0.4,
     'MUTATION_RATE': 0.6,
@@ -18,8 +18,8 @@ config_dict = {
     'FINISH_TIME': 18,
     'BLOCKS': 100,
 }
-transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
-block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'map.xlsx')
+transporter_path = os.path.join(os.getcwd(),'..', 'create_data', 'data', 'transporter.csv')
+block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'blocks.csv')
 
 
 class SetSizeException(Exception):
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     filemanager = FileManager()
 
     transporter_container = filemanager.load_transporters(transporter_path)
-    block_container = filemanager.create_block_from_map_file(block_path, 100)
+    block_container = filemanager.load_block_data(block_path, 100)
 
     ga = GA(transporter_container, block_container, config_dict, selection_method='roulette')
     tp = ga.run_GA()['best_individual']

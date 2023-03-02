@@ -62,6 +62,7 @@ class Selection:
         parents = self.choice_parents(sqrt_cumulative_prob, population)
         return parents
 
+    # 임시
     def scaled_roulette_selection(self, population, fitness_values):
         total_fitness = sum(fitness_values)
 
@@ -82,7 +83,7 @@ class Selection:
         return parents
 
 
-
+    # 임시
     def choice_parents(self, cumulative_prob, population):
         parents = set()
 

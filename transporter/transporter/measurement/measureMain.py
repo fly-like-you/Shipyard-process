@@ -22,7 +22,7 @@ transporter_container = file_manager.load_transporters(transporter_path)
 
 config_dict = {
     'POPULATION_SIZE': 100,  # 한 세대에서의 인구 수를 설정합니다.
-    'GENERATION_SIZE': 300,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
+    'GENERATION_SIZE': 10,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
     'LOAD_REST_TIME': 0.1,  # 트랜스포터가 목적지에서 물건을 실어나르는 시간을 설정합니다 (시)
     'ELITISM_RATE': 0.4,  # 엘리트 individual의 비율을 결정합니다.
     'MUTATION_RATE': 0.3,  # 돌연변이가 일어날 확률을 설정합니다.
@@ -63,16 +63,16 @@ def plot_graphs(x, y_list, labels, title):
 
 def a(block_container, container_title):
     roulette_result = GA(transporter_container, block_container, config_dict, selection_method='roulette').run_GA()
-    sqrt_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sqrt_roulette').run_GA()
-    square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='square_roulette').run_GA()
-    tournament_result = GA(transporter_container, block_container, config_dict, selection_method='tournament').run_GA()
+    # sqrt_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sqrt_roulette').run_GA()
+    # square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='square_roulette').run_GA()
+    # tournament_result = GA(transporter_container, block_container, config_dict, selection_method='tournament').run_GA()
     scaled_result = GA(transporter_container, block_container, config_dict, selection_method='scaled_roulette').run_GA()
 
     result_dict = {
         'roulette_result': roulette_result,
-        'sqrt_roulette_result': sqrt_roulette_result,
-        'square_roulette_result': square_roulette_result,
-        'tournament_result': tournament_result,
+        # 'sqrt_roulette_result': sqrt_roulette_result,
+        # 'square_roulette_result': square_roulette_result,
+        # 'tournament_result': tournament_result,
         'scaled_roulette': scaled_result
     }
 
@@ -95,7 +95,6 @@ def a(block_container, container_title):
 
 
 if __name__ == '__main__':
-    for i in range(5):
-        a(random_block_container, 'Random Blocks')
-        a(heavy_block_container, 'Heavy Blocks')
-        a(light_block_container, 'Light Blocks')
+
+    a(random_block_container, 'Random Blocks')
+

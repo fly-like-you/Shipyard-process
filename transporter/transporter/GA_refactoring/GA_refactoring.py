@@ -3,6 +3,7 @@ import copy
 from transporter.transporter.create_data.FileManager import FileManager
 from transporter.transporter.GA_refactoring.Mutation import Mutation
 from transporter.transporter.GA_refactoring.Selection import Selection
+from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 import random
 import math
 import numpy as np
@@ -41,13 +42,13 @@ class GA:
 
         self.selection_method = selection_method
 
-    def generate_population(self, size, transporter_li, block_li):
+    def generate_population(self):
         population = []
 
-        while len(population) < size:
-            cur_population = copy.deepcopy(transporter_li)
+        while len(population) < self.POPULATION_SIZE:
+            cur_population = copy.deepcopy(self.transport_container)
 
-            for block in block_li:
+            for block in self.block_container:
                 transporter_candidates = [t for t in cur_population if t.available_weight >= block.weight]
 
                 transporter = transporter_candidates.pop(random.randint(0, len(transporter_candidates) - 1))
@@ -56,6 +57,14 @@ class GA:
 
             if self.fitness(cur_population) > 0:
                 population.append(cur_population)
+
+        # 블록 스케줄링
+        for individual in population:
+            for transporter in individual:
+                if len(transporter.works) > 2:
+                    schedule_ga = ScheduleGA(transporter.works)
+                    transporter.works = schedule_ga.run()
+
         return population
 
     def fitness(self, individual):
@@ -183,6 +192,15 @@ class GA:
         overlap_fit_val_list = []
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
+            if generation % 50 == 0:
+                # 블록 스케줄링
+                print("스케줄링을 진행합니다")
+                for individual in population:
+                    for transporter in individual:
+                        if len(transporter.works) > 2:
+                            schedule_ga = ScheduleGA(transporter.works)
+                            transporter.works = schedule_ga.run()
+
             # 각 개체의 적합도 계산
             fitness_values = [self.fitness(p) for p in population]
             overlap_fit_val_list.append(len(set(fitness_values)))
@@ -191,7 +209,7 @@ class GA:
             best_individual = population[np.argmax(fitness_values)]
             work_tp_count_list.append(self.print_individual(best_individual))
             print(
-                f'Generation {generation + 1} best individual: {work_tp_count_list[generation]}, best_fitness_value: {np.max(fitness_values)}')
+                f'Generation {generation + 1} best individual: {work_tp_count_list[generation]}, best_fitness_value: {np.max(fitness_values)}, len: {len(set(fitness_values))}')
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
             elites = [population[i] for i in np.argsort(fitness_values)[::-1][:elite_size]]
@@ -200,7 +218,7 @@ class GA:
             crossover_size = self.POPULATION_SIZE - elite_size
             offspring = []
             while len(offspring) < crossover_size:
-                # 부모 개체 선택
+                # 부모 개체 선택 이거 select함수에서 2개 뽑자
                 parents = selection.select(population, fitness_values)
                 self.test_data(parents)
                 parent1, parent2 = random.sample(parents, k=2)
@@ -244,7 +262,36 @@ if __name__ == "__main__":
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.load_block_data(block_path, 100)
 
-    ga = GA(transporter_container, block_container, config_dict, selection_method='roulette')
-    tp = ga.run_GA()['best_individual']
-    tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
-    print_tp(tp)
+    ga = GA(transporter_container, block_container, config_dict, selection_method='square_roulette')
+    # tp = ga.run_GA()['best_individual']
+    # tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
+    # print_tp(tp)
+
+
+    import matplotlib.pyplot as plt
+    def plot_multiple_list_data(data_list, color_list=None):
+        if not color_list:
+            color_list = ['blue', 'red', 'green']  # 기본값 설정
+
+        x = range(len(data_list[0]))  # x축 범위는 첫 번째 리스트 데이터의 길이로 설정
+
+        for i, data in enumerate(data_list):
+            y = data
+            color = color_list[i % len(color_list)]  # color_list를 순환하도록 설정
+
+            plt.plot(x, y, color=color)
+
+        plt.show()
+
+    blocks = []
+    data_list = []
+    for i in range(3):
+
+        population = ga.generate_population()
+        selection = Selection('roulette')
+        fitness_values = [ga.fitness(p) for p in population]
+
+        data_list.append(selection.get_cumulative_prob(fitness_values))
+
+    colors = ['blue', 'red', 'green']
+    plot_multiple_list_data(data_list, colors)

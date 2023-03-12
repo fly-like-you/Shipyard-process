@@ -209,6 +209,7 @@ def perm(idx, length, arr):  # 순열, 백트래킹
     global cnt
     cnt += 1
     if cnt > 200000:
+        print("20만회 초과!")
         return
     if idx == length:
         global min_dist
@@ -341,16 +342,16 @@ def run_ga(transporters, blocks):
 
             if flag:
                 result_population = copy.deepcopy(temp)
-    # for trans in result_population:
-    #     if trans.works:
-    #         min_dist = math.inf
-    #         tsp_route = []
-    #         visited = [False] * len(trans.works)
-    #         arr = copy.deepcopy(trans)
-    #         arr.works = []
-    #         cnt = 0
-    #         perm(0, len(trans.works), arr)
-    #         trans.works = tsp_route[::]  # tsp_route를 현재 트랜스포터의 작업 순서로
+    for trans in result_population:
+        if trans.works:
+            min_dist = math.inf
+            tsp_route = []
+            visited = [False] * len(trans.works)
+            arr = copy.deepcopy(trans)
+            arr.works = []
+            cnt = 0
+            perm(0, len(trans.works), arr)
+            trans.works = tsp_route[::]  # tsp_route를 현재 트랜스포터의 작업 순서로
     optimization_count = 0
     work = 0
     optimization_time = 0
@@ -371,8 +372,8 @@ def run_ga(transporters, blocks):
 def GA_legacy():
     file_manager = FileManager()
 
-    transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter(len10).csv')
-    block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'blocks.csv')
+    transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
+    block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'blocks.csv')
 
     transporter_container = file_manager.load_transporters(transporter_path)
     block_container = file_manager.load_block_data(block_path, 100)

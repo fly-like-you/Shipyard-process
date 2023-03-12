@@ -1,6 +1,5 @@
 from transporter.transporter.measurement.DrawingFunctionPerformance import DrawingFunctionPerformance
 from transporter.transporter.create_data.FileManager import FileManager
-from transporter.transporter.Configuration import Configuration
 from transporter.transporter.GA_refactoring.GA_refactoring import GA
 from transporter.transporter.GA_legacy.GA_legacy import run_ga
 import os
@@ -21,8 +20,8 @@ random_block_container = file_manager.load_block_data(random_block_path)
 transporter_container = file_manager.load_transporters(transporter_path)
 
 config_dict = {
-    'POPULATION_SIZE': 100,  # 한 세대에서의 인구 수를 설정합니다.
-    'GENERATION_SIZE': 10,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
+    'POPULATION_SIZE': 50,  # 한 세대에서의 인구 수를 설정합니다.
+    'GENERATION_SIZE': 300,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
     'LOAD_REST_TIME': 0.1,  # 트랜스포터가 목적지에서 물건을 실어나르는 시간을 설정합니다 (시)
     'ELITISM_RATE': 0.4,  # 엘리트 individual의 비율을 결정합니다.
     'MUTATION_RATE': 0.3,  # 돌연변이가 일어날 확률을 설정합니다.
@@ -64,20 +63,22 @@ def plot_graphs(x, y_list, labels, title):
 def a(block_container, container_title):
     roulette_result = GA(transporter_container, block_container, config_dict, selection_method='roulette').run_GA()
     # sqrt_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sqrt_roulette').run_GA()
-    # square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='square_roulette').run_GA()
+    square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='square_roulette').run_GA()
     # tournament_result = GA(transporter_container, block_container, config_dict, selection_method='tournament').run_GA()
-    scaled_result = GA(transporter_container, block_container, config_dict, selection_method='scaled_roulette').run_GA()
+    # scaled_result = GA(transporter_container, block_container, config_dict, selection_method='scaled_roulette').run_GA()
+    sum_square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sum_square_roulette').run_GA()
 
     result_dict = {
         'roulette_result': roulette_result,
         # 'sqrt_roulette_result': sqrt_roulette_result,
-        # 'square_roulette_result': square_roulette_result,
+        'square_roulette_result': square_roulette_result,
         # 'tournament_result': tournament_result,
-        'scaled_roulette': scaled_result
+        # 'scaled_roulette': scaled_result
+        'sum_square_roulette': sum_square_roulette_result,
     }
 
     # keys = list(set(roulette_result.keys()) & set(sqrt_roulette_result.keys()))
-    keys = list(set(scaled_result.keys()))
+    keys = list(set(square_roulette_result.keys()))
     result_key = list(result_dict.keys())
 
     result_values = [result_dict[k] for k in result_dict]
@@ -89,12 +90,12 @@ def a(block_container, container_title):
             continue
         values = [result[key] for result in result_values]
 
-        plot_graphs(range(len(scaled_result[key])), values, result_key, container_title + " " + key)
+        plot_graphs(range(len(square_roulette_result[key])), values, result_key, container_title + " " + key)
 
 
 
 
 if __name__ == '__main__':
-
-    a(random_block_container, 'Random Blocks')
+    for i in range(3):
+        a(random_block_container, 'Random Blocks')
 

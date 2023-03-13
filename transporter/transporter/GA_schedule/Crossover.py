@@ -12,7 +12,7 @@ class Crossover:
     def crossover(self, crossover_size):
         offspring_pool = []
         while len(offspring_pool) < crossover_size:
-            parent_1, parent_2 = self.selection.selection()
+            parent_1, parent_2 = self.selection.selection2()
             if random.random() < self.crossover_rate:
                 child1 = self.__ordered_crossover(parent_1, parent_2)
             else:

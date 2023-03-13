@@ -14,7 +14,7 @@ config_dict = {
     'GENERATION_SIZE': 500,
     'LOAD_REST_TIME': 0.2,
     'ELITISM_RATE': 0.4,
-    'MUTATION_RATE': 0.6,
+    'MUTATION_RATE': 0.3,
     'START_TIME': 9,
     'FINISH_TIME': 18,
     'BLOCKS': 100,
@@ -44,7 +44,8 @@ class GA:
 
     def generate_population(self):
         population = []
-
+        print("초기 해집단 생성")
+        count = 1
         while len(population) < self.POPULATION_SIZE:
             cur_population = copy.deepcopy(self.transport_container)
 
@@ -55,15 +56,19 @@ class GA:
                 transporter.works.insert(random.randint(0, len(transporter.works)), block)
                 cur_population[transporter.no].works = transporter.works
 
-            if self.fitness(cur_population) > 0:
-                population.append(cur_population)
-
-        # 블록 스케줄링
-        for individual in population:
-            for transporter in individual:
+            for transporter in cur_population:
                 if len(transporter.works) > 2:
                     schedule_ga = ScheduleGA(transporter.works)
                     transporter.works = schedule_ga.run()
+
+            if self.fitness(cur_population) > 0:
+                print(f'{count}번째 해 생성')
+                count += 1
+                population.append(cur_population)
+
+        # # 블록 스케줄링
+        # for individual in population:
+
 
         return population
 
@@ -187,19 +192,19 @@ class GA:
     def run_GA(self):
         mutation = Mutation(self.MUTATION_RATE)
         selection = Selection(self.selection_method)
-        population = self.generate_population(self.POPULATION_SIZE, self.transport_container, self.block_container)
+        population = self.generate_population()
         work_tp_count_list = []
         overlap_fit_val_list = []
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
-            if generation % 50 == 0:
-                # 블록 스케줄링
-                print("스케줄링을 진행합니다")
-                for individual in population:
-                    for transporter in individual:
-                        if len(transporter.works) > 2:
-                            schedule_ga = ScheduleGA(transporter.works)
-                            transporter.works = schedule_ga.run()
+            # if generation % 50 == 0:
+            #     # 블록 스케줄링
+            #     print("스케줄링을 진행합니다")
+            #     for individual in population:
+            #         for transporter in individual:
+            #             if len(transporter.works) > 2:
+            #                 schedule_ga = ScheduleGA(transporter.works)
+            #                 transporter.works = schedule_ga.run()
 
             # 각 개체의 적합도 계산
             fitness_values = [self.fitness(p) for p in population]
@@ -263,35 +268,8 @@ if __name__ == "__main__":
     block_container = filemanager.load_block_data(block_path, 100)
 
     ga = GA(transporter_container, block_container, config_dict, selection_method='square_roulette')
-    # tp = ga.run_GA()['best_individual']
-    # tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
-    # print_tp(tp)
+    tp = ga.run_GA()['best_individual']
+    tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
+    print_tp(tp)
 
 
-    import matplotlib.pyplot as plt
-    def plot_multiple_list_data(data_list, color_list=None):
-        if not color_list:
-            color_list = ['blue', 'red', 'green']  # 기본값 설정
-
-        x = range(len(data_list[0]))  # x축 범위는 첫 번째 리스트 데이터의 길이로 설정
-
-        for i, data in enumerate(data_list):
-            y = data
-            color = color_list[i % len(color_list)]  # color_list를 순환하도록 설정
-
-            plt.plot(x, y, color=color)
-
-        plt.show()
-
-    blocks = []
-    data_list = []
-    for i in range(3):
-
-        population = ga.generate_population()
-        selection = Selection('roulette')
-        fitness_values = [ga.fitness(p) for p in population]
-
-        data_list.append(selection.get_cumulative_prob(fitness_values))
-
-    colors = ['blue', 'red', 'green']
-    plot_multiple_list_data(data_list, colors)

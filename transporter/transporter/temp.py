@@ -37,4 +37,4 @@ class Graph:
 node_file_path = os.path.join(os.getcwd(), "node.csv")
 g = Graph()
 g.from_csv(node_file_path)
-g.draw()
+g.draw() # assa

@@ -3,8 +3,12 @@ import pathlib
 import random
 import sys
 import pandas as pd
+from transporter.transporter.create_data.Graph import Graph
 from transporter.transporter.create_data.Transporter import Transporter
 from transporter.transporter.create_data.Block import Block
+import newBlock
+import math
+
 
 class FileManager:
     def __init__(self):
@@ -85,6 +89,28 @@ class FileManager:
                 block = Block(no, weight, start_node, end_node, start_time, end_time, start_pos, end_pos)
                 block_list.append(block)
             return block_list
+    def load_new_block_data(self, file_path, BLOCK_NUM=100):
+        map = Graph()
+        node_file_path = os.path.join(os.getcwd(), "data", "node.csv")
+        map.from_csv(node_file_path)
+
+        df = pd.read_csv(file_path)
+
+        block_list = []
+        for i, (no, weight, start_node, end_node, start_time, end_time, start_pos, end_pos) in enumerate(
+                zip(df['no'], df['weight'], df['start_node'], df['end_node'], df['start_time'], df['end_time'],
+                    df['start_pos'], df['end_pos'])):
+            if i >= BLOCK_NUM:
+                break
+
+            # 블록에 대응하는 노드의 좌표를 이용하여 거리 계산
+            dist = map.node_distance(start_node + 1, end_node + 1)
+
+            # Block 생성 및 리스트에 추가
+            block = newBlock.Block(no, weight, start_node, end_node, start_time, end_time, dist)
+            block_list.append(block)
+        return block_list
+
 
 
 
@@ -94,12 +120,11 @@ if __name__ == '__main__':
     map_path = os.path.join(os.getcwd(), 'data', 'map.xlsx')
     block_path = os.path.join(os.getcwd(), 'data', 'blocks.csv')
     block_container = file_manager.load_block_data(block_path)
-    block_weight_list = []
 
-    for block in block_container:
-        block_weight_list.append(block.weight)
-    from transporter.transporter.measurement.measureData import plot_histogram
-    plot_histogram(block_weight_list, 700)
+    block_li = file_manager.load_new_block_data('lightBlocks.csv')
+    for block in block_li:
+        print(block)
+
 
 
 

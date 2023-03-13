@@ -1,3 +1,4 @@
+import os
 import random
 
 import numpy as np
@@ -5,12 +6,13 @@ import numpy as np
 from transporter.transporter.GA_schedule.Crossover import Crossover
 from transporter.transporter.GA_schedule.Selection import Selection
 from transporter.transporter.GA_schedule.Mutation import Mutation
-from transporter.transporter.create_data.Block import Block
-
+from transporter.transporter.create_data.newBlock import Block
+from transporter.transporter.create_data.Graph import Graph
 
 class ScheduleGA:
-    def __init__(self, blocks, population_size=10, max_generation=100, elitism_rate=0.3, mutation_rate=0.2):
+    def __init__(self, blocks, graph, population_size=10, max_generation=100, elitism_rate=0.3, mutation_rate=0.2):
         self.blocks = blocks
+        self.graph = graph
         self.population_size = population_size
         self.max_generation = max_generation
         self.elitism_rate = elitism_rate
@@ -29,17 +31,17 @@ class ScheduleGA:
         prev_result = 0
 
         for generation in range(self.max_generation):
-            selection = Selection(self.population, self.block_dict)
+            selection = Selection(self.population, self.block_dict, self.graph)
             crossover = Crossover(selection, 1)
             # 적합도 평가
             fitness_values = selection.fitness_values
-            # best_fitness, best_solution = self.get_best_solution(fitness_values)
+            best_fitness, best_solution = self.get_best_solution(fitness_values)
 
             # 결과 출력
-            # best_distance = int(1 / best_fitness)
-            # if prev_result != best_distance:
-            #     prev_result = best_distance
-            #     print(f'Generation {generation + 1} best individual: {best_solution}, best_distance: {best_distance}')
+            best_distance = int(1 / best_fitness)
+            if prev_result != best_distance:
+                prev_result = best_distance
+                print(f'Generation {generation + 1} best individual: {best_solution}, best_distance: {best_distance}')
 
             # 엘리트 선택
             elite_size = int(self.population_size * self.elitism_rate)
@@ -73,16 +75,18 @@ class ScheduleGA:
         best_solution_idx = self.population[best_idx]
         best_solution = [self.block_dict[idx] for idx in best_solution_idx]
 
-        return best_fitness, best_solution
+        return best_fitness, best_solution_idx
 
 
 if __name__ == '__main__':
-
+    node_file_path = os.path.join(os.getcwd(), "..", "create_data", "data", "node.csv")
+    graph = Graph()
+    graph.from_csv(node_file_path)
     blocks = []
-    for i in range(15):
-        block = Block(i + 1, 1, 1, 1, 1, 1, [0, i], [0, i + 1])
+    for i in range(5):
+        block = Block(i + 1, 1, i+1, i+2, 1, 1, graph)
         blocks.append(block)
 
-    ga = ScheduleGA(blocks, population_size=60, max_generation=1000)
+    ga = ScheduleGA(blocks, graph, population_size=30, max_generation=1000)
     sol = ga.run()
     print(sol)

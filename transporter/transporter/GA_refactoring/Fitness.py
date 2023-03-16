@@ -2,6 +2,8 @@ import math
 
 
 class Fitness:
+    # TODO 블록 맵 데이터를 그래프로 마이그레이션하기
+
     @staticmethod
     def fitness(individual, time_set):
         start_time = time_set['start_time']

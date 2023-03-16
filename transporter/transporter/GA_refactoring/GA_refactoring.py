@@ -1,21 +1,16 @@
-# 새로 작성한 GA
-import copy
 from transporter.transporter.create_data.FileManager import FileManager
 from transporter.transporter.GA_refactoring.Mutation import Mutation
 from transporter.transporter.GA_refactoring.Selection import Selection
 from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
-from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 
-import random
-import math
 import numpy as np
 import os
 
 config_dict = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 500,
+    'GENERATION_SIZE': 200,
     'LOAD_REST_TIME': 0.2,
     'ELITISM_RATE': 0.4,
     'MUTATION_RATE': 0.3,
@@ -30,6 +25,21 @@ block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'blocks.csv'
 class SetSizeException(Exception):
     pass
 
+def data_test(inspect_population, blocks):  # 블록 개수와 블록 중복 체크
+    # given
+    block_overlap_set = set()
+
+    # when
+    for transporter_list in inspect_population:
+        for transporter in transporter_list:
+            process = transporter.works
+
+            for block in process:
+                block_overlap_set.add(block)
+
+    # then
+    if len(block_overlap_set) != blocks:
+        raise SetSizeException(f"Set size is not 30! generation")
 
 class GA:
     def __init__(self, transport_container, block_container, config_dict, selection_method='roulette'):
@@ -50,35 +60,18 @@ class GA:
         self.population = Population(transporter_container, block_container, self.POPULATION_SIZE)
         self.population.generate_population(time_set=self.time_set)
 
-
-    def test_data(self, inspect_population):  # 블록 개수와 블록 중복 체크
-        # given
-        block_overlap_set = set()
-
-        # when
-        for transporter_list in inspect_population:
-            for transporter in transporter_list:
-                process = transporter.works
-
-                for block in process:
-                    block_overlap_set.add(block)
-
-        # then
-        if len(block_overlap_set) != self.BLOCKS:
-            raise SetSizeException(f"Set size is not 30! generation")
-
-    def get_transporter_count(self, individual):
-        work_tp_count = 0
-        for transporter in individual:
-            if transporter.works:
-                work_tp_count += 1
-        return work_tp_count
-
     def get_best_solution(self, fitness_values, population):
+        def get_transporter_count(individual):
+            work_tp_count = 0
+            for transporter in individual:
+                if transporter.works:
+                    work_tp_count += 1
+            return work_tp_count
+
         best_idx = np.argmax(fitness_values)
         best_fitness = fitness_values[best_idx]
         best_individual = population[best_idx]
-        best_transporter_count = self.get_transporter_count(best_individual)
+        best_transporter_count = get_transporter_count(best_individual)
 
         return best_fitness, best_transporter_count
 
@@ -119,10 +112,9 @@ class GA:
                 prev_transporter_count = best_transporter_count
                 print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, len: {overlap_fitness_len}')
 
-
             result["overlap_fit_val_len"].append(overlap_fitness_len)
             result['work_tp_count'].append(best_transporter_count)
-            self.test_data(population)
+            data_test(population, self.BLOCKS)
 
         # 최종 세대에서 가장 우수한 개체 출력
         fitness_values = Fitness.get_fitness_list(population, time_set=self.time_set)

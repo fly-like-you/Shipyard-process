@@ -4,10 +4,9 @@ import numpy as np
 
 
 class Selection:
-    def __init__(self, population, block_dict: dict, graph):
+    def __init__(self, population, block_dict: dict, shortest_path_dict):
         self.population = population
-        self.graph = graph
-        self.node_pos = self.graph.get_node_attr()
+        self.shortest_path_dict = shortest_path_dict
         self.fitness_values = [self.__evaluate_fitness(individual, block_dict) for individual in self.population]
         self.square_cumulative_prob = self.get_cumulative_prob()
 
@@ -48,7 +47,7 @@ class Selection:
 
         for block_no in individual:
             block = block_dict[block_no]
-            total_distance += block.dist + self.graph.node_distance(transporter_node, block.start_node)
+            total_distance += self.shortest_path_dict[block.start_node][block.end_node] + self.shortest_path_dict[transporter_node][block.start_node]
             transporter_node = block.end_node
 
         return 1 / total_distance

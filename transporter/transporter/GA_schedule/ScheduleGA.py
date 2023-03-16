@@ -10,9 +10,9 @@ from transporter.transporter.create_data.Block import Block
 from transporter.transporter.create_data.Graph import Graph
 
 class ScheduleGA:
-    def __init__(self, blocks, graph, population_size=10, max_generation=100, elitism_rate=0.3, mutation_rate=0.2):
+    def __init__(self, blocks, shortest_path_dict, population_size=10, max_generation=100, elitism_rate=0.3, mutation_rate=0.2):
         self.blocks = blocks
-        self.graph = graph
+        self.shortest_path_dict = shortest_path_dict
         self.population_size = population_size
         self.max_generation = max_generation
         self.elitism_rate = elitism_rate
@@ -31,7 +31,7 @@ class ScheduleGA:
         prev_result = 0
 
         for generation in range(self.max_generation):
-            selection = Selection(self.population, self.block_dict, self.graph)
+            selection = Selection(self.population, self.block_dict, self.shortest_path_dict)
             crossover = Crossover(selection, 1)
             # 적합도 평가
             fitness_values = selection.fitness_values
@@ -81,11 +81,15 @@ class ScheduleGA:
 if __name__ == '__main__':
     node_file_path = os.path.join(os.getcwd(), "..", "create_data", "data", "node.csv")
     graph = Graph(node_file_path)
+    shortest_path_dict = graph.get_shortest_path_dict()
     blocks = []
-    for i in range(5):
-        block = Block(i + 1, 1, i+1, i+2, 1, 1)
+    for i in range(10):
+        rand1, rand2 = random.sample([i for i in range(1, 31)], k=2)
+        block = Block(i + 1, 1, rand1, rand2, 1, 1)
         blocks.append(block)
 
-    ga = ScheduleGA(blocks, graph, population_size=30, max_generation=1000)
+    ga = ScheduleGA(blocks, shortest_path_dict, population_size=100, max_generation=1000)
     sol = ga.run()
     print(sol)
+
+# [3, 8, 9, 5, 6, 1, 2, 7, 10, 4] 21134

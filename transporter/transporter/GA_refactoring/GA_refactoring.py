@@ -13,7 +13,7 @@ config_dict = {
     'POPULATION_SIZE': 100,
     'GENERATION_SIZE': 500,
     'LOAD_REST_TIME': 0.3,
-    'ELITISM_RATE': 0.4,
+    'ELITISM_RATE': 0.1,
     'MUTATION_RATE': 0.3,
     'START_TIME': 9,
     'FINISH_TIME': 18,
@@ -101,7 +101,7 @@ class GA:
             offspring = Crossover.cross(crossover_size, fitness_values, population, self.transporter_container, selection, self.BLOCKS)
 
             # 돌연 변이 연산 수행
-            mutation.apply_mutation(offspring)
+            mutation.apply_mutation(offspring, generation, self.GENERATION_SIZE)
 
             # 다음 세대 개체 집단 생성
             population = elites + offspring
@@ -109,13 +109,14 @@ class GA:
             # 각 개체의 적합도 계산
             fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
             overlap_fitness_len = len(set(fitness_values))
+            sorted_fit_val = sorted(fitness_values)
 
             # 현재 세대에서 가장 우수한 개체 출력
             best_individual, best_transporter_count = self.get_best_solution(fitness_values, population)
 
             if best_transporter_count != prev_transporter_count:
                 prev_transporter_count = best_transporter_count
-                print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, len: {overlap_fitness_len}')
+                print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, len: {overlap_fitness_len}, fitness:{sorted_fit_val}')
 
             result["overlap_fit_val_len"].append(overlap_fitness_len)
             result['work_tp_count'].append(best_transporter_count)
@@ -144,9 +145,9 @@ if __name__ == "__main__":
 
     graph = Graph(node_file_path)
     transporter_container = filemanager.load_transporters(transporter_path)
-    block_container = filemanager.load_block_data(block_path, 100)
+    block_container = filemanager.load_block_data(block_path, config_dict['BLOCKS'])
 
-    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='square_roulette')
+    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='scaled_roulette')
     tp = ga.run_GA()['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
     print_tp(tp)

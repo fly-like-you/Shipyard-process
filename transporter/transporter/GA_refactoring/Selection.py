@@ -10,42 +10,12 @@ class Selection:
     def select(self, population, fitness_values):
         if self.method == 'roulette':
             return self.roulette_selection(population, fitness_values)
-        elif self.method == 'tournament':
-            return self.tournament_selection(population, fitness_values)
-        elif self.method == 'sqrt_roulette':
-            return self.sqrt_roulette_selection(population, fitness_values)
-        elif self.method == 'square_roulette':
-            return self.square_roulette_selection(population, fitness_values)
         elif self.method == 'scaled_roulette':
             return self.scaled_roulette_selection(population, fitness_values)
-        elif self.method == 'sum_square_roulette':
-            return self.sum_square_roulette_selection(population, fitness_values)
+        elif self.method == 'square_roulette':
+            return self.square_roulette_selection(population, fitness_values)
         else:
             raise ValueError(f"Invalid selection method: {self.method}")
-
-    def roulette_selection(self, population, fitness_values):
-        cumulative_prob = self.get_cumulative_prob(fitness_values)
-        parents = self.choice_parents(cumulative_prob, population)
-        return parents
-
-    def tournament_selection(self, population, fitness_values, tournament_size=20):
-        winners = set()
-
-        while len(winners) < len(population) // 10:
-            participants = random.sample(population, tournament_size)
-            winner = max(participants, key=lambda x: fitness_values[population.index(x)])
-            winners.add(tuple(winner))
-
-        return winners
-
-    # 임시
-    def sqrt_roulette_selection(self, population, fitness_values):
-        cumulative_prob = self.get_cumulative_prob(fitness_values)
-        sqrt_cumulative_prob = np.sqrt(cumulative_prob)
-
-        parents = self.choice_parents(sqrt_cumulative_prob, population)
-        return parents
-
 
     def square_roulette_selection(self, population, fitness_values):
         cumulative_prob = self.get_cumulative_prob(fitness_values)
@@ -54,20 +24,11 @@ class Selection:
         parents = self.choice_parents(sqrt_cumulative_prob, population)
         return parents
 
-    def get_cumulative_prob(self, fitness_values):
-        total_fitness = sum(fitness_values)
-        probabilities = [f / total_fitness for f in fitness_values]
-        cumulative_prob = [sum(probabilities[:i + 1]) for i in range(len(probabilities))]
-        return cumulative_prob
-
-    def sum_square_roulette_selection(self, population, fitness_values):
-        fitness_value_squared = np.square(fitness_values)
-        cumulative_prob = self.get_cumulative_prob(fitness_value_squared)
-
+    def roulette_selection(self, population, fitness_values):
+        cumulative_prob = self.get_cumulative_prob(fitness_values)
         parents = self.choice_parents(cumulative_prob, population)
         return parents
 
-    # 임시
     def scaled_roulette_selection(self, population, fitness_values):
         total_fitness = sum(fitness_values)
 
@@ -87,12 +48,19 @@ class Selection:
         parents = self.choice_parents(cumulative_prob, population)
         return parents
 
-    # 임시
+
+
+    def get_cumulative_prob(self, fitness_values):
+        total_fitness = sum(fitness_values)
+        probabilities = [f / total_fitness for f in fitness_values]
+        cumulative_prob = [sum(probabilities[:i + 1]) for i in range(len(probabilities))]
+        return cumulative_prob
+
     def choice_parents(self, cumulative_prob, population):
 
         parents = set()
         count = 0
-        while len(parents) < len(population) // 10:
+        while len(parents) < 2:
             rand = random.random()
             for i in range(len(cumulative_prob)):
                 if rand <= cumulative_prob[i]:

@@ -48,8 +48,6 @@ class Selection:
         parents = self.choice_parents(cumulative_prob, population)
         return parents
 
-
-
     def get_cumulative_prob(self, fitness_values):
         total_fitness = sum(fitness_values)
         probabilities = [f / total_fitness for f in fitness_values]
@@ -57,19 +55,14 @@ class Selection:
         return cumulative_prob
 
     def choice_parents(self, cumulative_prob, population):
-
         parents = set()
-        count = 0
+
         while len(parents) < 2:
             rand = random.random()
             for i in range(len(cumulative_prob)):
                 if rand <= cumulative_prob[i]:
                     parents.add(tuple(population[i]))
                     break
-            count += 1
-            if count >= 500000:
-                print('다양성저하')
-                return random.sample(population, k=2)
         return parents
 
 

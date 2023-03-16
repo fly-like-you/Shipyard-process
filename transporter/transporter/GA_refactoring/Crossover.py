@@ -1,20 +1,11 @@
 import random
-import copy
 from transporter.transporter.GA_refactoring.Selection import Selection
 from transporter.transporter.CustomDeepCopy import CustomDeepCopy
-from transporter.transporter.GA_refactoring.Fitness import Fitness
-from transporter.transporter.create_data.Graph import Graph
-import os
 
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
+class SetSizeException(Exception):
+    pass
 
-time_set = {
-    'start_time': 9,
-    'end_time': 18,
-    'load_rest_time': 0.3,
-}
-graph = Graph(node_file_path)
-shortest_path_dict = graph.get_shortest_path_dict()
+
 class Crossover:
     @staticmethod
     def cross(crossover_size, fitness_values, population, empty_transporters, selection: Selection, block_count):
@@ -25,12 +16,8 @@ class Crossover:
             parents = selection.select(population, fitness_values)
             parent1, parent2 = random.sample(parents, k=2)
 
-
-
             # 교차 연산 수행
             child1, child2 = Crossover.crossover(parent1, parent2, empty_transporters, block_count)
-            if Fitness.fitness(child1, time_set, shortest_path_dict) == 0 or Fitness.fitness(child2, time_set, shortest_path_dict) == 0:
-                continue
 
             # 교차 연산 결과 자손 개체 추가
             if child1:

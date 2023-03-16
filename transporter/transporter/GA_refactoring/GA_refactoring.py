@@ -4,24 +4,25 @@ from transporter.transporter.GA_refactoring.Selection import Selection
 from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
+from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 from transporter.transporter.create_data.Graph import Graph
 
 import numpy as np
 import os
 
 config_dict = {
-    'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 500,
+    'POPULATION_SIZE': 50,
+    'GENERATION_SIZE': 2000,
     'LOAD_REST_TIME': 0.3,
-    'ELITISM_RATE': 0.1,
-    'MUTATION_RATE': 0.3,
+    'ELITISM_RATE': 0.3,
+    'MUTATION_RATE': 0.2,
     'START_TIME': 9,
     'FINISH_TIME': 18,
     'BLOCKS': 100,
 }
 node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
-block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'lightBlocks.csv')
+block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 
 
 class SetSizeException(Exception):
@@ -63,7 +64,7 @@ class GA:
         self.selection_method = selection_method
         self.shortest_path_dict = graph.get_shortest_path_dict()
         self.population = Population(transporter_container, block_container, self.POPULATION_SIZE)
-        self.population.generate_population(self.time_set, self.shortest_path_dict)
+        self.population.generate_population()
 
 
     def get_best_solution(self, fitness_values, population):
@@ -86,11 +87,19 @@ class GA:
         population = self.population.get_population()
         mutation = Mutation(self.MUTATION_RATE)
         selection = Selection(self.selection_method)
-        result = {'best_individual': None, 'work_tp_count': [], 'overlap_fit_val_len': []}
+        result = {'best_individual': None, 'work_tp_count': [], 'fitness': []}
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
 
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
+
+            if generation % 50 == 0:
+                for individual in population:
+                    for transporter in individual:
+                        if len(transporter.works) > 5:
+                            scheduling = ScheduleGA(transporter.works, self.shortest_path_dict, population_size=30, max_generation=100)
+                            transporter.works = scheduling.run()
+
 
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
@@ -108,7 +117,6 @@ class GA:
 
             # 각 개체의 적합도 계산
             fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
-            overlap_fitness_len = len(set(fitness_values))
             sorted_fit_val = sorted(fitness_values)
 
             # 현재 세대에서 가장 우수한 개체 출력
@@ -116,9 +124,9 @@ class GA:
 
             if best_transporter_count != prev_transporter_count:
                 prev_transporter_count = best_transporter_count
-                print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, len: {overlap_fitness_len}, fitness:{sorted_fit_val}')
+                print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, fitness:{sorted_fit_val[-10:]}')
 
-            result["overlap_fit_val_len"].append(overlap_fitness_len)
+            result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
             data_test(population, self.BLOCKS)
 
@@ -126,7 +134,7 @@ class GA:
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
         best_individual = population[np.argmax(fitness_values)]
         print(
-            f'Final generation best individual: {result["work_tp_count"][-1]}, best_fitness_value: {np.max(fitness_values)}, len:{result["overlap_fit_val_len"][-1]}')
+            f'Final generation best individual: {result["work_tp_count"][-1]}, best_fitness_value: {np.max(fitness_values)}, ')
 
         result['best_individual'] = best_individual
         return result
@@ -147,7 +155,7 @@ if __name__ == "__main__":
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.load_block_data(block_path, config_dict['BLOCKS'])
 
-    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='scaled_roulette')
+    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='square_roulette')
     tp = ga.run_GA()['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
     print_tp(tp)

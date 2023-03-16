@@ -38,10 +38,10 @@ class ScheduleGA:
             best_fitness, best_solution = self.get_best_solution(fitness_values)
 
             # 결과 출력
-            best_distance = int(1 / best_fitness)
-            if prev_result != best_distance:
-                prev_result = best_distance
-                print(f'Generation {generation + 1} best individual: {best_solution}, best_distance: {best_distance}')
+            # best_distance = int(1 / best_fitness)
+            # if prev_result != best_distance:
+            #     prev_result = best_distance
+            #     print(f'Generation {generation + 1} best individual: {best_solution}, best_distance: {best_distance}')
 
             # 엘리트 선택
             elite_size = int(self.population_size * self.elitism_rate)
@@ -75,7 +75,7 @@ class ScheduleGA:
         best_solution_idx = self.population[best_idx]
         best_solution = [self.block_dict[idx] for idx in best_solution_idx]
 
-        return best_fitness, best_solution_idx
+        return best_fitness, best_solution
 
 
 if __name__ == '__main__':

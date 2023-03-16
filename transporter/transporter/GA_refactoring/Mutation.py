@@ -12,7 +12,7 @@ class Mutation:
 
         for tp_index in range(len(transporter_li) // 2):
             min_len_trans = random.choice(transporter_li[:2])
-            max_len_trans = random.choice(transporter_li[-8:])
+            max_len_trans = random.choice(transporter_li[-3:])
 
             if min_len_trans == max_len_trans:
                 continue
@@ -59,9 +59,7 @@ class Mutation:
             if random.random() < mutation_rate:
                 self.mutation2(individual)
 
-
     def dynamic_mutation_rate(self, current_gen, generation, alpha=2):
-
         progress = current_gen / generation
         adjusted_progress = math.pow(progress, alpha)
         return self.mutation_rate * (1 - adjusted_progress)

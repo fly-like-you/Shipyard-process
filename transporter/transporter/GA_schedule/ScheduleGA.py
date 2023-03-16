@@ -6,7 +6,7 @@ import numpy as np
 from transporter.transporter.GA_schedule.Crossover import Crossover
 from transporter.transporter.GA_schedule.Selection import Selection
 from transporter.transporter.GA_schedule.Mutation import Mutation
-from transporter.transporter.create_data.newBlock import Block
+from transporter.transporter.create_data.Block import Block
 from transporter.transporter.create_data.Graph import Graph
 
 class ScheduleGA:
@@ -80,11 +80,10 @@ class ScheduleGA:
 
 if __name__ == '__main__':
     node_file_path = os.path.join(os.getcwd(), "..", "create_data", "data", "node.csv")
-    graph = Graph()
-    graph.from_csv(node_file_path)
+    graph = Graph(node_file_path)
     blocks = []
     for i in range(5):
-        block = Block(i + 1, 1, i+1, i+2, 1, 1, graph)
+        block = Block(i + 1, 1, i+1, i+2, 1, 1)
         blocks.append(block)
 
     ga = ScheduleGA(blocks, graph, population_size=30, max_generation=1000)

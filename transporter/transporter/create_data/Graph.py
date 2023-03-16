@@ -6,8 +6,9 @@ import math
 
 
 class Graph:
-    def __init__(self):
+    def __init__(self, csv_file_path):
         self.graph = nx.Graph()
+        self.from_csv(csv_file_path)
 
     def from_csv(self, csv_file_path):
         df = pd.read_csv(csv_file_path)
@@ -31,6 +32,9 @@ class Graph:
     def node_distance(self, node1, node2):
         return nx.shortest_path_length(self.graph, source=node1, target=node2, weight='weight')
 
+    def get_shortest_path_dict(self):
+        return dict(nx.shortest_path_length(self.graph, weight='weight'))
+
     def get_node_attr(self):
         return nx.get_node_attributes(self.graph, "pos")
 
@@ -40,6 +44,7 @@ class Graph:
         nx.draw(self.graph, pos=pos, with_labels=True, node_size=50, font_size=5)
         nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=labels, font_size=5)
         plt.show()
+
 
 
 # node_file_path = os.path.join(os.getcwd(), "data", "node.csv")

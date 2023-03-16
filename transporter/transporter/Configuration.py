@@ -36,7 +36,7 @@ class Configuration:
     def create_blocks_from_node(self, map_path):
         if map_path:
             file_manager = FileManager()
-            return file_manager.create_block_from_map_file(map_path, self.blocks)
+            return file_manager.create_block_from_graph_file(map_path, self.blocks)
 
     def read_transporters_from_file(self, transporter_path):
         file_manager = FileManager()

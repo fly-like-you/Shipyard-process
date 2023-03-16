@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 from transporter.transporter.GA_schedule.Selection import Selection
-from transporter.transporter.create_data.Block import Block
 
 
 def plot_multiple_list_data(data_list, dot_list=None, color_list=None):
@@ -25,10 +24,7 @@ def plot_multiple_list_data(data_list, dot_list=None, color_list=None):
     plt.show()
 
 
-blocks = []
-for i in range(15):
-    block = Block(i + 1, 1, 1, 1, 1, 1, [0, i], [0, i + 1])
-    blocks.append(block)
+
 
 ga = ScheduleGA(blocks, population_size=10, max_generation=300)
 select_size = 50

@@ -14,7 +14,7 @@ class Population:
     def get_population(self):
         return self.population
 
-    def generate_population(self, time_set):
+    def generate_population(self, time_set, shortest_path_dict):
         print("초기 해집단 생성")
         count = 1
         while len(self.population) < self.population_size:
@@ -22,12 +22,7 @@ class Population:
 
             self.load_block_to_transporter(cur_population)
 
-            # for transporter in cur_population:
-            #     if len(transporter.works) > 2:
-            #         schedule_ga = ScheduleGA(transporter.works)
-            #         transporter.works = schedule_ga.run()
-            #
-            if Fitness.fitness(cur_population, time_set) > 0:
+            if Fitness.fitness(cur_population, time_set, shortest_path_dict) > 0:
                 print(f'{count}번째 해 생성')
                 count += 1
                 self.population.append(cur_population)

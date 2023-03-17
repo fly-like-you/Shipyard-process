@@ -35,13 +35,13 @@ class ScheduleGA:
             crossover = Crossover(selection, 1)
             # 적합도 평가
             fitness_values = selection.fitness_values
-            best_fitness, best_solution = self.get_best_solution(fitness_values)
+            best_fitness, best_solution, best_solution_idx = self.get_best_solution(fitness_values)
 
             # 결과 출력
             # best_distance = int(1 / best_fitness)
             # if prev_result != best_distance:
             #     prev_result = best_distance
-            #     print(f'Generation {generation + 1} best individual: {best_solution}, best_distance: {best_distance}')
+            #     print(f'Generation {generation + 1} best individual: {best_solution_idx}, best_distance: {best_distance}')
 
             # 엘리트 선택
             elite_size = int(self.population_size * self.elitism_rate)
@@ -58,7 +58,7 @@ class ScheduleGA:
             self.population = elites + offsprings
 
         # 최종 해 선택
-        best_fitness, best_solution = self.get_best_solution(fitness_values)
+        best_fitness, best_solution, best_solution_idx = self.get_best_solution(fitness_values)
         return best_solution
 
     def init_population(self):
@@ -75,7 +75,7 @@ class ScheduleGA:
         best_solution_idx = self.population[best_idx]
         best_solution = [self.block_dict[idx] for idx in best_solution_idx]
 
-        return best_fitness, best_solution
+        return best_fitness, best_solution, best_solution_idx
 
 
 if __name__ == '__main__':
@@ -83,13 +83,17 @@ if __name__ == '__main__':
     graph = Graph(node_file_path)
     shortest_path_dict = graph.get_shortest_path_dict()
     blocks = []
-    for i in range(10):
-        rand1, rand2 = random.sample([i for i in range(1, 31)], k=2)
-        block = Block(i + 1, 1, rand1, rand2, 1, 1)
+    for i in range(20):
+
+        block = Block(i + 1, 1, i+1, i+2, 1, 1)
         blocks.append(block)
+    result = []
+    for i in range(10):
+        ga = ScheduleGA(blocks, shortest_path_dict, population_size=100, max_generation=1000)
+        sol = ga.run()
+        result.append(sol)
+    print(result)
 
-    ga = ScheduleGA(blocks, shortest_path_dict, population_size=100, max_generation=1000)
-    sol = ga.run()
-    print(sol)
-
-# [3, 8, 9, 5, 6, 1, 2, 7, 10, 4] 21134
+#12586
+# first [11946.0, 12426.0, 11946.0, 11946.0, 12266.0, 12446.0, 11946.0, 12266.0, 11946.0, 12266.0]
+# second [15706.0, 14606.000000000002, 13446.0, 14326.0, 14165.999999999998, 14326.0, 14258.0, 12850.0, 13698.0, 13666.0]

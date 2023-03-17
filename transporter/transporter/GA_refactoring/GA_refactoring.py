@@ -5,10 +5,13 @@ from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
+from transporter.transporter.GA_schedule.ParellelOptimizer import ParellelOptimizer
 from transporter.transporter.create_data.Graph import Graph
+
 import time
 import multiprocessing
 import numpy as np
+import queue
 import os
 
 config_dict = {
@@ -39,55 +42,11 @@ def data_test(inspect_population, blocks):  # 블록 개수와 블록 중복 체
             process = transporter.works
 
             for block in process:
-                block_overlap_set.add(block)
+                block_overlap_set.add(block.no)
 
     # then
     if len(block_overlap_set) != blocks:
         raise SetSizeException(f"Set size is not 30! generation")
-
-
-
-def optimize_transporter(population, shortest_path_dict, execution_time_queue):
-    start_time = time.time()
-
-    for individual in population:
-        for transporter in individual:
-            if len(transporter.works) > 5:
-                scheduling = ScheduleGA(transporter.works, shortest_path_dict, population_size=30, max_generation=100)
-                transporter.works = scheduling.run()
-    end_time = time.time()
-    execution_time = end_time - start_time
-    execution_time_queue.put(execution_time)
-
-
-def parallel_optimization(population, shortest_path_dict):
-    processes = []
-    populations = []
-    task = int(len(population) * (1 / 10))
-    first = task * 5
-    second = first + task * 3
-
-    populations.append(population[:first])
-
-    populations.append(population[first:second])
-    populations.append(population[second:])
-    execution_time_queues = [multiprocessing.Queue() for _ in range(len(populations))]
-
-    for i, population in enumerate(populations):
-
-        p = multiprocessing.Process(target=optimize_transporter,
-                                    args=(population, shortest_path_dict, execution_time_queues[i]))
-        p.start()
-        processes.append(p)
-
-    for p in processes:
-        p.join()
-
-    execution_times = [q.get() for q in execution_time_queues]
-    print(execution_times)
-
-
-
 
 class GA:
     def __init__(self, transporter_container, block_container, graph, config_dict, selection_method='roulette'):
@@ -140,7 +99,8 @@ class GA:
 
             if generation % 50 == 0:
                 start_time = time.time()
-                parallel_optimization(population, self.shortest_path_dict)
+                optimizer = ParellelOptimizer(population, self.shortest_path_dict)
+                optimizer.run()
                 end_time = time.time()
                 elapsed_time = end_time - start_time
                 print(f"Parallel optimization took {elapsed_time:.2f} seconds.")

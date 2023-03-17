@@ -30,7 +30,7 @@ random_block_container = file_manager.load_block_data(random_block_path)
 
 config_dict = {
     'POPULATION_SIZE': 100,  # 한 세대에서의 인구 수를 설정합니다.
-    'GENERATION_SIZE': 100,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
+    'GENERATION_SIZE': 300,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
     'LOAD_REST_TIME': 0.1,  # 트랜스포터가 목적지에서 물건을 실어나르는 시간을 설정합니다 (시)
     'ELITISM_RATE': 0.4,  # 엘리트 individual의 비율을 결정합니다.
     'MUTATION_RATE': 0.3,  # 돌연변이가 일어날 확률을 설정합니다.

@@ -1,4 +1,5 @@
 import random
+import math
 
 
 class Mutation:
@@ -11,7 +12,7 @@ class Mutation:
 
         for tp_index in range(len(transporter_li) // 2):
             min_len_trans = random.choice(transporter_li[:2])
-            max_len_trans = random.choice(transporter_li[-8:])
+            max_len_trans = random.choice(transporter_li[-3:])
 
             if min_len_trans == max_len_trans:
                 continue
@@ -21,7 +22,7 @@ class Mutation:
             max_len_trans_works = individual[max_len_trans_index].works
             min_len_trans_works = individual[min_len_trans_index].works
 
-            if not min_len_trans_works:
+            if not min_len_trans_works or not max_len_trans_works:
                 continue
             insert_block = random.choice(min_len_trans_works)
 
@@ -49,9 +50,16 @@ class Mutation:
                 # 선택된 두 트랜스포터의 작업 목록을 서로 스왑
                 swap_transporter_works(small_tp, large_tp)
 
-    def apply_mutation(self, population):
+    def apply_mutation(self, population, current_gen, generation):
+        mutation_rate = self.dynamic_mutation_rate(current_gen, generation)
+
         for individual in population:
-            if random.random() < self.mutation_rate:
+            if random.random() < mutation_rate:
                 self.mutation(individual)
-            if random.random() < self.mutation_rate / 2:
+            if random.random() < mutation_rate:
                 self.mutation2(individual)
+
+    def dynamic_mutation_rate(self, current_gen, generation, alpha=2):
+        progress = current_gen / generation
+        adjusted_progress = math.pow(progress, alpha)
+        return self.mutation_rate * (1 - adjusted_progress)

@@ -3,11 +3,11 @@ import csv
 def create_block():
     # 양식
     # print(block.no, block.weight, block.start_node, block.end_node,
-    #       block.start_time, block.end_time, block.start_pos[0], block.start_pos[1], block.end_pos[0], block.end_pos[1])
+    #       block.start_time, block.end_time, block.start_pos[0], block.start_pos[1])
 
-    with open('lightBlocks.csv', mode='w', newline='') as file:
+    with open('Blocks.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(['no', 'weight', 'start_node', 'end_node', 'start_time', 'end_time', 'start_pos', 'end_pos'])
+        writer.writerow(['no', 'weight', 'start_node', 'end_node', 'start_time', 'end_time'])
 
         while True:
             input_str = input("Enter block member (no weight start_node end_node start_time end_time start_pos end_pos): ")
@@ -22,10 +22,8 @@ def create_block():
             end_node = int(inputs[3])
             start_time = int(inputs[4])
             end_time = int(inputs[5])
-            start_pos = [int(inputs[6]), int(inputs[7])]
-            end_pos = [int(inputs[8]), int(inputs[9])]
 
-            block = [no, weight, start_node, end_node, start_time, end_time, start_pos, end_pos]
+            block = [no, weight, start_node, end_node, start_time, end_time]
 
             writer.writerow(block)
 create_block()

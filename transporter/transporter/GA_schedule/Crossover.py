@@ -1,7 +1,6 @@
 import random
 
 from transporter.transporter.GA_schedule.Selection import Selection
-from transporter.transporter.create_data.Block import Block
 
 
 class Crossover:
@@ -52,16 +51,5 @@ class Crossover:
 
 
 if __name__ == '__main__':
-    # Block 인스턴스 3개 생성
-    block1 = Block(1, 5, 10, 20, 0, 2, [0, 0], [0, 0])
-    block2 = Block(2, 5, 20, 30, 2, 4, [3, 0], [3, 0])
-    block3 = Block(3, 5, 30, 40, 4, 6, [3, 4], [3, 4])
-    block4 = Block(4, 5, 30, 40, 4, 6, [2, 1], [3, 4])
-
-    # 인스턴스 리스트 생성
-    blocks = [block1, block2, block3]
-
-    # 적합도 함수 테스트
-    population1 = [[block1.no, block2.no, block3.no, block4.no], [block2.no, block1.no, block3.no, block4.no],
-                   [block1.no, block2.no, block3.no, block4.no]]
+    pass
 

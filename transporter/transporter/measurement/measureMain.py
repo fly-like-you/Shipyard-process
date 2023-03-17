@@ -1,26 +1,35 @@
+from transporter.transporter.create_data.Graph import Graph
 from transporter.transporter.measurement.DrawingFunctionPerformance import DrawingFunctionPerformance
 from transporter.transporter.create_data.FileManager import FileManager
 from transporter.transporter.GA_refactoring.GA_refactoring import GA
 from transporter.transporter.GA_legacy.GA_legacy import run_ga
 import os
 import matplotlib.pyplot as plt
+from matplotlib import font_manager, rc
+
+# 폰트 세팅
+font_path = r'C:\Windows\Fonts\gulim.ttc'
+font = font_manager.FontProperties(fname=font_path).get_name()
+rc('font', family=font)
 
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
-random_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'blocks.csv')
+random_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 heavy_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'heavyBlocks.csv')
 light_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'lightBlocks.csv')
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
 
 
 file_manager = FileManager()
 
+graph = Graph(node_file_path)
+transporter_container = file_manager.load_transporters(transporter_path)
 light_block_container = file_manager.load_block_data(light_block_path)
 heavy_block_container = file_manager.load_block_data(heavy_block_path)
 random_block_container = file_manager.load_block_data(random_block_path)
 
-transporter_container = file_manager.load_transporters(transporter_path)
 
 config_dict = {
-    'POPULATION_SIZE': 50,  # 한 세대에서의 인구 수를 설정합니다.
+    'POPULATION_SIZE': 100,  # 한 세대에서의 인구 수를 설정합니다.
     'GENERATION_SIZE': 300,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
     'LOAD_REST_TIME': 0.1,  # 트랜스포터가 목적지에서 물건을 실어나르는 시간을 설정합니다 (시)
     'ELITISM_RATE': 0.4,  # 엘리트 individual의 비율을 결정합니다.
@@ -60,21 +69,66 @@ def plot_graphs(x, y_list, labels, title):
     plt.legend()
     plt.show()
 
+
+
+def plot_fitness(result, label): # result col: 세대 row: 세대별 적합도
+    plt.figure(figsize=(10, 5))
+    max_fitnesses = []  # 각 세대에서 가장 높은 적합도를 저장할 리스트
+    median_fitnesses = []  # 각 세대에서 중앙값을 저장할 리스트
+    min_fitnesses = []  # 각 세대에서 가장 낮은 적합도를 저장할 리스트
+
+    for i, generation in enumerate(result, start=1):
+        max_fitness = max(generation)  # 해당 세대에서 가장 높은 적합도
+        min_fitness = min(generation)  # 해당 세대에서 가장 낮은 적합도
+        import numpy as np
+        median_fitness = np.median(generation)  # 해당 세대에서 중앙값
+
+        max_fitnesses.append(max_fitness)
+        median_fitnesses.append(median_fitness)
+        min_fitnesses.append(min_fitness)
+
+        # 세대에서 가장 높은 적합도, 중앙값, 가장 낮은 적합도를 그래프에 추가
+        plt.plot(i, max_fitness, marker='o', markersize=5, color='blue', linestyle='-')
+        plt.plot(i, median_fitness, marker='o', markersize=5, color='orange', linestyle='-')
+        plt.plot(i, min_fitness, marker='o', markersize=5, color='green', linestyle='-')
+
+    plt.xlabel('세대')
+    plt.ylabel('적합도')
+    plt.title(f'세대별 개체별 적합도 selection방식: {label}')
+    plt.legend()
+    plt.show()
+
+
+def extract_fitness_stats(result):
+    best_fitness = []
+    avg_fitness = []
+    worst_fitness = []
+
+    for generation in result:
+        best = max(generation)
+        avg = sum(generation) / len(generation)
+        worst = min(generation)
+
+        best_fitness.append(best)
+        avg_fitness.append(avg)
+        worst_fitness.append(worst)
+
+    return best_fitness, avg_fitness, worst_fitness
 def a(block_container, container_title):
-    roulette_result = GA(transporter_container, block_container, config_dict, selection_method='roulette').run_GA()
+    # roulette_result = GA(transporter_container, block_container, config_dict, selection_method='roulette').run_GA()
     # sqrt_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sqrt_roulette').run_GA()
-    square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='square_roulette').run_GA()
+    square_roulette_result = GA(transporter_container, block_container, graph, config_dict, selection_method='selection2').run_GA()
     # tournament_result = GA(transporter_container, block_container, config_dict, selection_method='tournament').run_GA()
     # scaled_result = GA(transporter_container, block_container, config_dict, selection_method='scaled_roulette').run_GA()
-    sum_square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sum_square_roulette').run_GA()
+    # sum_square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sum_square_roulette').run_GA()
 
     result_dict = {
-        'roulette_result': roulette_result,
+        # 'roulette_result': roulette_result,
         # 'sqrt_roulette_result': sqrt_roulette_result,
         'square_roulette_result': square_roulette_result,
         # 'tournament_result': tournament_result,
         # 'scaled_roulette': scaled_result
-        'sum_square_roulette': sum_square_roulette_result,
+        # 'sum_square_roulette': sum_square_roulette_result,
     }
 
     # keys = list(set(roulette_result.keys()) & set(sqrt_roulette_result.keys()))
@@ -88,14 +142,18 @@ def a(block_container, container_title):
     for key in keys:
         if key == 'best_individual':
             continue
-        values = [result[key] for result in result_values]
 
-        plot_graphs(range(len(square_roulette_result[key])), values, result_key, container_title + " " + key)
 
+        if key == 'work_tp_count':
+            values = [result[key] for result in result_values]
+
+            plot_graphs(range(len(square_roulette_result[key])), values, result_key, container_title + " " + key)
+        elif key == 'fitness':
+            plot_fitness(result[key], 'selection2')
 
 
 
 if __name__ == '__main__':
-    for i in range(3):
+    for i in range(1):
         a(random_block_container, 'Random Blocks')
 

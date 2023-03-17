@@ -5,8 +5,8 @@ from transporter.transporter.create_data.FileManager import FileManager
 
 class legacy_ga_test(unittest.TestCase):
     file_manager = FileManager()
-    transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
-    block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'blocks.csv')
+    transporter_path = os.path.join(os.getcwd(), '../..', 'create_data', 'data', 'transporter.csv')
+    block_path = os.path.join(os.getcwd(), '../..', 'create_data', 'data', 'blocks.csv')
     
     block_container = file_manager.load_block_data(block_path, 100)
     transporter_container = file_manager.load_transporters(transporter_path)

@@ -13,7 +13,7 @@ import os
 
 config_dict = {
     'POPULATION_SIZE': 50,
-    'GENERATION_SIZE': 2000,
+    'GENERATION_SIZE': 200,
     'LOAD_REST_TIME': 0.3,
     'ELITISM_RATE': 0.3,
     'MUTATION_RATE': 0.2,
@@ -68,6 +68,7 @@ def parallel_optimization(population, shortest_path_dict):
     second = first + task * 3
 
     populations.append(population[:first])
+
     populations.append(population[first:second])
     populations.append(population[second:])
     execution_time_queues = [multiprocessing.Queue() for _ in range(len(populations))]
@@ -144,20 +145,6 @@ class GA:
                 elapsed_time = end_time - start_time
                 print(f"Parallel optimization took {elapsed_time:.2f} seconds.")
 
-            # if generation % 50 == 0:
-            #     start_time = time.time()
-            #     for individual in population:
-            #         for transporter in individual:
-            #             if len(transporter.works) > 5:
-            #                 scheduling = ScheduleGA(transporter.works, self.shortest_path_dict, population_size=30,
-            #                                         max_generation=100)
-            #                 transporter.works = scheduling.run()
-            #     end_time = time.time()
-            #     elapsed_time = end_time - start_time
-            #     print(f"Parallel optimization took {elapsed_time:.2f} seconds.")
-
-
-
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
             elites = [population[i] for i in np.argsort(fitness_values)[::-1][:elite_size]]
@@ -212,7 +199,7 @@ if __name__ == "__main__":
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.load_block_data(block_path, config_dict['BLOCKS'])
 
-    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='square_roulette')
+    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='selection2')
     tp = ga.run_GA()['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
     print_tp(tp)

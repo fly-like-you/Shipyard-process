@@ -1,3 +1,5 @@
+import numpy as np
+
 from transporter.transporter.create_data.Graph import Graph
 from transporter.transporter.measurement.DrawingFunctionPerformance import DrawingFunctionPerformance
 from transporter.transporter.create_data.FileManager import FileManager
@@ -7,10 +9,13 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib import font_manager, rc
 
+from transporter.transporter.multi_start.MultiStart import MultiStart
 # 폰트 세팅
-font_path = r'C:\Windows\Fonts\gulim.ttc'
-font = font_manager.FontProperties(fname=font_path).get_name()
-rc('font', family=font)
+# font_path = r'C:\Windows\Fonts\gulim.ttc'
+# font = font_manager.FontProperties(fname=font_path).get_name()
+# rc('font', family=font)
+rc('font', family='AppleGothic')
+plt.rcParams['axes.unicode_minus'] = False
 
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
 random_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
@@ -18,22 +23,19 @@ heavy_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'heavy
 light_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'lightBlocks.csv')
 node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
 
-
 file_manager = FileManager()
-
 graph = Graph(node_file_path)
 transporter_container = file_manager.load_transporters(transporter_path)
 light_block_container = file_manager.load_block_data(light_block_path)
 heavy_block_container = file_manager.load_block_data(heavy_block_path)
 random_block_container = file_manager.load_block_data(random_block_path)
 
-
 config_dict = {
-    'POPULATION_SIZE': 100,  # 한 세대에서의 인구 수를 설정합니다.
-    'GENERATION_SIZE': 300,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
-    'LOAD_REST_TIME': 0.1,  # 트랜스포터가 목적지에서 물건을 실어나르는 시간을 설정합니다 (시)
-    'ELITISM_RATE': 0.4,  # 엘리트 individual의 비율을 결정합니다.
-    'MUTATION_RATE': 0.3,  # 돌연변이가 일어날 확률을 설정합니다.
+    'POPULATION_SIZE': 60, # 한 세대에서의 인구 수를 설정합니다.
+    'GENERATION_SIZE': 400,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
+    'LOAD_REST_TIME': 0.3,  # 트랜스포터가 목적지에서 물건을 실어나르는 시간을 설정합니다 (시)
+    'ELITISM_RATE': 0.2,  # 엘리트 individual의 비율을 결정합니다.
+    'MUTATION_RATE': 0.4,  # 돌연변이가 일어날 확률을 설정합니다.
     'START_TIME': 9,  # 일과의 시작시간을 결정합니다.
     'FINISH_TIME': 18,  # 일과가 끝나는 시간을 결정합니다.
     'BLOCKS': 100,  # 총 블록 수를 설정합니다. 최대 100개까지 설정가능합니다.
@@ -43,8 +45,6 @@ config_dict = {
     진화가 진행되면서 우수한 개체를 뽑기 때문에 중복되는 개체가 생기게 되는데
     중복되는 개체에 대해서 시각적인 그래프로 출력하는 파일
 '''
-
-
 def compareToLegacy():
     ga = GA(transporter_container, random_block_container, config_dict)
 
@@ -69,91 +69,81 @@ def plot_graphs(x, y_list, labels, title):
     plt.legend()
     plt.show()
 
+def plot_fitness(results, labels): # result col: 세대 row: 세대별 적합도
+    plt.figure(figsize=(15, 5), dpi=300)
+    fig, ax = plt.subplots()
 
 
-def plot_fitness(result, label): # result col: 세대 row: 세대별 적합도
-    plt.figure(figsize=(10, 5))
-    max_fitnesses = []  # 각 세대에서 가장 높은 적합도를 저장할 리스트
-    median_fitnesses = []  # 각 세대에서 중앙값을 저장할 리스트
-    min_fitnesses = []  # 각 세대에서 가장 낮은 적합도를 저장할 리스트
+    for idx, fitness in enumerate(results):
+        max_fitnesses = []  # 각 세대에서 가장 높은 적합도를 저장할 리스트
+        median_fitnesses = []  # 각 세대에서 중앙값을 저장할 리스트
+        min_fitnesses = []  # 각 세대에서 가장 낮은 적합도를 저장할 리스트
+        for generation in fitness:
 
-    for i, generation in enumerate(result, start=1):
-        max_fitness = max(generation)  # 해당 세대에서 가장 높은 적합도
-        min_fitness = min(generation)  # 해당 세대에서 가장 낮은 적합도
-        import numpy as np
-        median_fitness = np.median(generation)  # 해당 세대에서 중앙값
+            max_fitness = max(generation)  # 해당 세대에서 가장 높은 적합도
+            min_fitness = min(generation)  # 해당 세대에서 가장 낮은 적합도
+            median_fitness = np.average(generation)  # 해당 세대에서 중앙값
 
-        max_fitnesses.append(max_fitness)
-        median_fitnesses.append(median_fitness)
-        min_fitnesses.append(min_fitness)
+            max_fitnesses.append(max_fitness)
+            median_fitnesses.append(median_fitness)
+            min_fitnesses.append(min_fitness)
+        # 그래프 그리기
 
+        ax.fill_between(range(len(min_fitnesses)), min_fitnesses, max_fitnesses, alpha=0.4, linewidth=0)
         # 세대에서 가장 높은 적합도, 중앙값, 가장 낮은 적합도를 그래프에 추가
-        plt.plot(i, max_fitness, marker='o', markersize=5, color='blue', linestyle='-')
-        plt.plot(i, median_fitness, marker='o', markersize=5, color='orange', linestyle='-')
-        plt.plot(i, min_fitness, marker='o', markersize=5, color='green', linestyle='-')
-
+        plt.plot(median_fitnesses, label=labels[idx])
+    plt.legend()
     plt.xlabel('세대')
     plt.ylabel('적합도')
-    plt.title(f'세대별 개체별 적합도 selection방식: {label}')
-    plt.legend()
+    plt.title('세대별 개체별 적합도')
+    plt.savefig("30gen2selectionk10.png", dpi=300)
+
     plt.show()
 
 
-def extract_fitness_stats(result):
-    best_fitness = []
-    avg_fitness = []
-    worst_fitness = []
 
-    for generation in result:
-        best = max(generation)
-        avg = sum(generation) / len(generation)
-        worst = min(generation)
 
-        best_fitness.append(best)
-        avg_fitness.append(avg)
-        worst_fitness.append(worst)
-
-    return best_fitness, avg_fitness, worst_fitness
 def a(block_container, container_title):
-    # roulette_result = GA(transporter_container, block_container, config_dict, selection_method='roulette').run_GA()
-    # sqrt_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sqrt_roulette').run_GA()
-    square_roulette_result = GA(transporter_container, block_container, graph, config_dict, selection_method='selection2').run_GA()
-    # tournament_result = GA(transporter_container, block_container, config_dict, selection_method='tournament').run_GA()
-    # scaled_result = GA(transporter_container, block_container, config_dict, selection_method='scaled_roulette').run_GA()
-    # sum_square_roulette_result = GA(transporter_container, block_container, config_dict, selection_method='sum_square_roulette').run_GA()
+    method_key = ['selection2', 'roulette']
+    result_key = ['best_individual', 'work_tp_count', 'fitness']
+    result_dict = dict()
+    for i in range(len(method_key)):
+        result_dict[method_key[i]] = GA(transporter_container,
+                                         block_container, graph, config_dict, selection_method=method_key[i]).run_GA()
+    # 변환할 딕셔너리 초기화
+    result = {key1: {key2: None for key2 in method_key} for key1 in result_key}
+    # 변환 수행
+    for key1, val1 in result_dict.items():
+        for key2, val2 in val1.items():
+            result[key2][key1] = val2
 
-    result_dict = {
-        # 'roulette_result': roulette_result,
-        # 'sqrt_roulette_result': sqrt_roulette_result,
-        'square_roulette_result': square_roulette_result,
-        # 'tournament_result': tournament_result,
-        # 'scaled_roulette': scaled_result
-        # 'sum_square_roulette': sum_square_roulette_result,
-    }
+    for ret_key in result.keys():  # best, work, fitness
+        values = []
+        if ret_key == 'work_tp_count':
+            for method in method_key:
+                values.append(result[ret_key][method])
+            plot_graphs(range(len(values[0])), values, method_key, container_title + " " + ret_key)
 
-    # keys = list(set(roulette_result.keys()) & set(sqrt_roulette_result.keys()))
-    keys = list(set(square_roulette_result.keys()))
-    result_key = list(result_dict.keys())
+        if ret_key == 'fitness':
+            for method in method_key:
+                values.append(result[ret_key][method])
 
-    result_values = [result_dict[k] for k in result_dict]
-    for result in result_values:
-        del result['best_individual']
+            plot_fitness(values, method_key)
 
-    for key in keys:
-        if key == 'best_individual':
-            continue
+    # time_set = {
+    #     'start_time': config_dict['START_TIME'],
+    #     'end_time': config_dict['FINISH_TIME'],
+    #     'load_rest_time': config_dict['LOAD_REST_TIME'],
+    # }
+    # multi_start = MultiStart(transporter_container, random_block_container, graph, 50, time_set)
+    # print("multistart")
+    # multi_start.run()
+    # for i in range(len(multi_start.fitness_values)):
+    #     plt.plot(1, multi_start.fitness_values[i], marker='o', linestyle='', color='black')
 
-
-        if key == 'work_tp_count':
-            values = [result[key] for result in result_values]
-
-            plot_graphs(range(len(square_roulette_result[key])), values, result_key, container_title + " " + key)
-        elif key == 'fitness':
-            plot_fitness(result[key], 'selection2')
 
 
 
 if __name__ == '__main__':
     for i in range(1):
         a(random_block_container, 'Random Blocks')
-

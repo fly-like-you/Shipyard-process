@@ -5,7 +5,6 @@ from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
-from transporter.transporter.GA_schedule.ParellelOptimizer import ParellelOptimizer
 from transporter.transporter.create_data.Graph import Graph
 
 import time
@@ -15,8 +14,8 @@ import queue
 import os
 
 config_dict = {
-    'POPULATION_SIZE': 50,
-    'GENERATION_SIZE': 200,
+    'POPULATION_SIZE': 100,
+    'GENERATION_SIZE': 1000,
     'LOAD_REST_TIME': 0.3,
     'ELITISM_RATE': 0.3,
     'MUTATION_RATE': 0.2,
@@ -26,7 +25,7 @@ config_dict = {
 }
 node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
-block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'lightBlocks.csv')
+block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 
 
 class SetSizeException(Exception):
@@ -97,13 +96,19 @@ class GA:
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
 
-            if generation % 50 == 0:
+            if generation % 100 == 0:
                 start_time = time.time()
-                optimizer = ParellelOptimizer(population, self.shortest_path_dict)
-                optimizer.run()
+                for individual in population:
+                    for transporter in individual:
+                        if len(transporter.works) > 5:
+                            scheduling = ScheduleGA(transporter.works, self.shortest_path_dict, population_size=30,
+                                                    max_generation=100)
+                            transporter.works = scheduling.run()
                 end_time = time.time()
                 elapsed_time = end_time - start_time
                 print(f"Parallel optimization took {elapsed_time:.2f} seconds.")
+
+
 
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
@@ -159,7 +164,7 @@ if __name__ == "__main__":
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.load_block_data(block_path, config_dict['BLOCKS'])
 
-    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='selection2')
+    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='square_roulette')
     tp = ga.run_GA()['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
     print_tp(tp)

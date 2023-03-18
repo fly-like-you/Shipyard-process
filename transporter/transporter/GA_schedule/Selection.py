@@ -1,7 +1,4 @@
 import random
-import math
-import numpy as np
-
 
 class Selection:
     def __init__(self, population, block_dict: dict, shortest_path_dict):
@@ -23,7 +20,7 @@ class Selection:
         return 1 / total_distance
 
     def selection2(self):
-        k = 5  # 선택압 파라미터 k
+        k = 3  # 선택압 파라미터 k
 
         if len(set(self.fitness_values)) == 1:
             return random.sample(self.population, k=2)

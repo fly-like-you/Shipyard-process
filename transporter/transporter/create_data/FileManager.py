@@ -5,7 +5,6 @@ import sys
 import pandas as pd
 
 from transporter.transporter.create_data.Block import Block
-from transporter.transporter.create_data.Graph import Graph
 from transporter.transporter.create_data.Transporter import Transporter
 
 

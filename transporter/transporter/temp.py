@@ -8,7 +8,7 @@ import random
 import imageio
 import os
 
-node_file_path = os.path.join(os.getcwd(), "create_data", "data", "node.csv")
+node_file_path = os.path.join(os.getcwd(), "create_data", "data", "node(temp).csv")
 transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
 block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'Blocks.csv')
 
@@ -17,16 +17,18 @@ shortest_path_dict = graph.get_shortest_path_dict()
 graph = graph.graph
 
 file_manager = FileManager()
-block_container = file_manager.load_block_data(block_path)
+# block_container = file_manager.load_block_data(block_path)
+block_container = file_manager.create_block_from_graph_file(node_file_path, 100)
 
 # 랜덤으로 블록 선택
 blocks = []
 tp_moving = []
 
 for i in range(10):
-    rand1, rand2 = random.sample(range(1, 39), k=2)
+    rand1, rand2 = random.sample(range(1, 52), k=2)
 
     block = Block(i + 1, 1, rand1, rand2, 1, 1)
+    # block = random.sample(block_container, k=1)
     blocks.append(block)
 
 ga = ScheduleGA(blocks, shortest_path_dict, population_size=100, max_generation=1500)
@@ -59,7 +61,6 @@ for i, move in enumerate(tp_moving, start=1):
 
     # 최단경로 계산
     shortest_path = nx.shortest_path(graph, start_node, end_node, weight="distance")
-    print(shortest_path)
     # 노드 색상과 크기 변경
     node_colors[start_node - 1] = "red"
     node_colors[end_node - 1] = "green"

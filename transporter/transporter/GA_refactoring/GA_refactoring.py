@@ -164,7 +164,7 @@ if __name__ == "__main__":
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.load_block_data(block_path, config_dict['BLOCKS'])
 
-    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='square_roulette')
+    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='selection2')
     tp = ga.run_GA()['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
     print_tp(tp)

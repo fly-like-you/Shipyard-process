@@ -6,6 +6,7 @@ import os
 # 한글 폰트 사용을 위해서 세팅
 from matplotlib import font_manager, rc
 
+# 윈도우
 font_path = r'C:\Windows\Fonts\gulim.ttc'
 
 font = font_manager.FontProperties(fname=font_path).get_name()

@@ -32,6 +32,7 @@ class Fitness:
                 cur_node = block.end_node  # 현재 위치를 블록의 종료 위치로 업데이트
 
             total_time = max(total_time, cur_time)  # 모든 트랜스포터가 일을 마치는 시간 업데이트
+            fitness_score += 1 / (cur_time * 100000)
 
         fitness_score += 1 / total_time * 1
 

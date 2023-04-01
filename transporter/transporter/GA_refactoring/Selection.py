@@ -37,8 +37,10 @@ class Selection:
                     parents.add(tuple(population[i]))
                     break
         return parents
-    def selection2(self, population, fitness_values, k=3):
+    def selection2(self, population, fitness_values, k=4):
           # 선택압 파라미터 k가 낮음수록 다양성이 높아짐
+        if all(elem == fitness_values[0] for elem in fitness_values):
+            return [population[0], population[1]]
 
         max_fitness = max(fitness_values)
         min_fitness = min(fitness_values)
@@ -52,13 +54,20 @@ class Selection:
 
         # 룰렛휠 선택
         selected = set()
+        fitness_score = 0
         while len(selected) < 2:
             point = random.uniform(0, fitness_sum)
             cumulative_prob = 0
             for j in range(len(fitness_calculated)):
                 cumulative_prob += fitness_calculated[j]
                 if cumulative_prob >= point:
-                    selected.add(tuple(population[j]))
+                    # population과
+                    if fitness_score != 0:
+                        if fitness_score != fitness_calculated[j]:
+                            selected.add(tuple(population[j]))
+                    else:  # 첫 원소를 넣을때
+                        fitness_score = fitness_calculated[j]
+                        selected.add(tuple(population[j]))
                     break
         return selected
 

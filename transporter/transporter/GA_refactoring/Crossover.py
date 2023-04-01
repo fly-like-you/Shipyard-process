@@ -8,6 +8,20 @@ class SetSizeException(Exception):
 
 class Crossover:
     @staticmethod
+    def isSame(individual1, individual2):
+        for tp_idx in range(len(individual1)):
+            tp1 = individual1[tp_idx]
+            tp2 = individual2[tp_idx]
+            if len(tp1.works) == len(tp2.works):
+                for i in range(len(tp1.works)):
+                    block1 = tp1.works[i]
+                    block2 = tp2.works[i]
+                    if block1.no != block2.no:
+                        return False
+            else:
+                return False
+        return True
+    @staticmethod
     def cross(crossover_size, fitness_values, population, empty_transporters, selection: Selection, block_count):
         # 교차 연산 수행
         offspring = []
@@ -24,7 +38,17 @@ class Crossover:
                 offspring.append(child1)
             if child2 and len(offspring) < crossover_size:
                 offspring.append(child2)
+
+        # for i in range(len(offspring)):
+        #     for j in range(len(offspring)):
+        #         if i != j:
+        #             if Crossover.isSame(offspring[i], offspring[j]):
+        #                 print(1)
         return offspring
+
+
+
+
 
     @staticmethod
     def crossover(parent1, parent2, empty_transporters, block_count):
@@ -62,3 +86,4 @@ class Crossover:
                     if flag2:
                         break
         return child1, child2
+

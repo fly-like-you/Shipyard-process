@@ -6,24 +6,22 @@ from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 from transporter.transporter.create_data.Graph import Graph
-
-import time
-import multiprocessing
 import numpy as np
-import queue
+import pickle
+import time
 import os
 
 config_dict = {
     'POPULATION_SIZE': 100,
     'GENERATION_SIZE': 1000,
     'LOAD_REST_TIME': 0.3,
-    'ELITISM_RATE': 0.3,
-    'MUTATION_RATE': 0.2,
+    'ELITISM_RATE': 0.02,
+    'MUTATION_RATE': 0.20,
     'START_TIME': 9,
     'FINISH_TIME': 18,
     'BLOCKS': 100,
 }
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node(temp).csv")
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
 block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 
@@ -92,23 +90,9 @@ class GA:
         selection = Selection(self.selection_method)
         result = {'best_individual': None, 'work_tp_count': [], 'fitness': []}
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
-
+        self.run_schedule_ga(population)
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
-
-            if generation % 100 == 0:
-                start_time = time.time()
-                for individual in population:
-                    for transporter in individual:
-                        if len(transporter.works) > 5:
-                            scheduling = ScheduleGA(transporter.works, self.shortest_path_dict, population_size=30,
-                                                    max_generation=100)
-                            transporter.works = scheduling.run()
-                end_time = time.time()
-                elapsed_time = end_time - start_time
-                print(f"Parallel optimization took {elapsed_time:.2f} seconds.")
-
-
 
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
@@ -121,6 +105,8 @@ class GA:
             # 돌연 변이 연산 수행
             mutation.apply_mutation(offspring, generation, self.GENERATION_SIZE)
 
+            if generation % 250 == 0:
+                self.run_schedule_ga(offspring)
             # 다음 세대 개체 집단 생성
             population = elites + offspring
 
@@ -131,13 +117,15 @@ class GA:
             # 현재 세대에서 가장 우수한 개체 출력
             best_individual, best_transporter_count = self.get_best_solution(fitness_values, population)
 
-            if best_transporter_count != prev_transporter_count:
-                prev_transporter_count = best_transporter_count
-                print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, fitness:{sorted_fit_val[-10:]}')
+            # if best_transporter_count != prev_transporter_count:
+            prev_transporter_count = best_transporter_count
+            len_fit = len(set(fitness_values))
+            print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
 
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
-            data_test(population, self.BLOCKS)
+            # data_test(population, self.BLOCKS)
+
 
         # 최종 세대에서 가장 우수한 개체 출력
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
@@ -148,7 +136,17 @@ class GA:
         result['best_individual'] = best_individual
         return result
 
-
+    def run_schedule_ga(self, population):
+        start_time = time.time()
+        for individual in population:
+            for transporter in individual:
+                if len(transporter.works) > 5:
+                    scheduling = ScheduleGA(transporter.works, self.shortest_path_dict, population_size=30,
+                                            max_generation=200)
+                    transporter.works = scheduling.run()
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"Parallel optimization took {elapsed_time:.2f} seconds.")
 
 
 def print_tp(individual):
@@ -159,12 +157,20 @@ def print_tp(individual):
 
 if __name__ == "__main__":
     filemanager = FileManager()
-
+    #
     graph = Graph(node_file_path)
+    with open('pickle_data/graph.pkl', 'wb') as f:
+        pickle.dump(graph, f)
     transporter_container = filemanager.load_transporters(transporter_path)
-    block_container = filemanager.load_block_data(block_path, config_dict['BLOCKS'])
+    block_container = filemanager.create_block_from_graph_file(node_file_path, config_dict['BLOCKS'])
 
     ga = GA(transporter_container, block_container, graph, config_dict, selection_method='selection2')
-    tp = ga.run_GA()['best_individual']
+    result = ga.run_GA()
+
+    with open('pickle_data/my_dict.pkl', 'wb') as f:
+        pickle.dump(result, f)
+
+    tp = result['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)
     print_tp(tp)
+

@@ -1,5 +1,8 @@
+import pickle
+
+import pandas as pd
+
 from transporter.transporter.GA_refactoring.Population import Population
-from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 from transporter.transporter.create_data.FileManager import FileManager
 from transporter.transporter.create_data.Graph import Graph
 from transporter.transporter.GA_refactoring.Fitness import Fitness
@@ -21,6 +24,7 @@ class MultiStart:
 
 
     def run(self):
+
         population = Population(self.transporter_container, self.block_container, self.size)
         population.generate_population()
         population = population.get_population()
@@ -32,33 +36,45 @@ class MultiStart:
 
 
 if __name__ == "__main__":
-    config_dict = {
+    ga_params = {
         'POPULATION_SIZE': 100,
-        'GENERATION_SIZE': 1000,
-        'LOAD_REST_TIME': 0.3,
-        'ELITISM_RATE': 0.3,
-        'MUTATION_RATE': 0.2,
-        'START_TIME': 9,
-        'FINISH_TIME': 18,
-        'BLOCKS': 100,
+        'GENERATION_SIZE': 500,
+        'ELITISM_RATE': 0.05,
+        'MUTATION_RATE': 1,
+        'SELECTION_METHOD': 'selection2',
     }
-    time_set = {
-        'start_time': config_dict['START_TIME'],
-        'end_time': config_dict['FINISH_TIME'],
-        'load_rest_time': config_dict['LOAD_REST_TIME'],
+    precondition = {
+        'START_TIME': 9,  # 전제
+        'FINISH_TIME': 18,  # 전제
+        'LOAD_REST_TIME': 0.3,  # 전제
+        'BLOCKS': 100,  # 전제
     }
+
 
     filemanager = FileManager()
 
     graph = Graph(node_file_path)
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.load_block_data(block_path, 100)
+    time_set = {
+        'start_time': precondition['START_TIME'],
+        'end_time': precondition['FINISH_TIME'],
+        'load_rest_time': precondition['LOAD_REST_TIME'],
+    }
+    result = []
 
-    multi_start = MultiStart(transporter_container, block_container, graph, 100,time_set)
-    multi_start.run()
-    print( multi_start.fitness_values)
+    for i in range(300):
+        print(i)
+        multi_start = MultiStart(transporter_container, block_container, graph, 100, time_set)
+        multi_start.run()
+        a = sorted(multi_start.fitness_values, reverse=True)[0]
+        result.append({
+            'fitness': a,
+        })
+    df_results = pd.DataFrame(result).sort_values(by='fitness', ascending=False)
+    df_results.to_pickle(f'multi_start(len300).pkl')
 
-
+    print(result)
 
 
 

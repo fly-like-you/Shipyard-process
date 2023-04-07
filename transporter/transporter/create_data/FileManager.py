@@ -87,6 +87,8 @@ def plot_weight_histogram(weight_list):
     bins = range(0, 900, 100)  # x축 구간 설정
     plt.hist(weight_list, bins=bins)
     plt.xticks(bins)
+    plt.ylim(0, 30)
+
     plt.xlabel('Weight')
     plt.ylabel('Frequency')
     plt.title('Weight Histogram')
@@ -100,7 +102,7 @@ if __name__ == '__main__':
 
     file_manager = FileManager()
     block_path = os.path.join(os.getcwd(), 'data', 'blocks.csv')
-    block_li = file_manager.create_block_from_graph_file(node_file_path, 100, weight_style='random')
+    block_li = file_manager.create_block_from_graph_file(node_file_path, 100, weight_style='heavy')
     weight_list = []
     for block in block_li:
         weight_list.append(block.weight)

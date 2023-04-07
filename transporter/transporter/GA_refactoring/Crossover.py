@@ -21,6 +21,7 @@ class Crossover:
             else:
                 return False
         return True
+
     @staticmethod
     def cross(crossover_size, fitness_values, population, empty_transporters, selection: Selection, block_count):
         # 교차 연산 수행
@@ -39,16 +40,7 @@ class Crossover:
             if child2 and len(offspring) < crossover_size:
                 offspring.append(child2)
 
-        # for i in range(len(offspring)):
-        #     for j in range(len(offspring)):
-        #         if i != j:
-        #             if Crossover.isSame(offspring[i], offspring[j]):
-        #                 print(1)
         return offspring
-
-
-
-
 
     @staticmethod
     def crossover(parent1, parent2, empty_transporters, block_count):

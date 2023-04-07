@@ -11,17 +11,21 @@ import pickle
 import time
 import os
 
-config_dict = {
+ga_params = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 1000,
-    'LOAD_REST_TIME': 0.3,
-    'ELITISM_RATE': 0.02,
-    'MUTATION_RATE': 0.20,
-    'START_TIME': 9,
-    'FINISH_TIME': 18,
-    'BLOCKS': 100,
+    'GENERATION_SIZE': 500,
+    'ELITISM_RATE': 0.05,
+    'MUTATION_RATE': 1,
+    'SELECTION_METHOD': 'selection2',
 }
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node(temp).csv")
+precondition = {
+    'START_TIME': 9,  # 전제
+    'FINISH_TIME': 18,  # 전제
+    'LOAD_REST_TIME': 0.3,  # 전제
+    'BLOCKS': 100,  # 전제
+}
+
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
 block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 
@@ -46,23 +50,26 @@ def data_test(inspect_population, blocks):  # 블록 개수와 블록 중복 체
         raise SetSizeException(f"Set size is not 30! generation")
 
 class GA:
-    def __init__(self, transporter_container, block_container, graph, config_dict, selection_method='roulette'):
+    def __init__(self, transporter_container, block_container, graph, ga_params, precondition):
         self.transporter_container = transporter_container
         self.block_container = block_container
         self.graph = graph
 
-        self.POPULATION_SIZE = config_dict['POPULATION_SIZE']
-        self.GENERATION_SIZE = config_dict['GENERATION_SIZE']
-        self.ELITISM_RATE = config_dict['ELITISM_RATE']
-        self.MUTATION_RATE = config_dict['MUTATION_RATE']
-        self.BLOCKS = config_dict['BLOCKS']
-
+        # 전제 조건
         self.time_set = {
-            'start_time': config_dict['START_TIME'],
-            'end_time': config_dict['FINISH_TIME'],
-            'load_rest_time': config_dict['LOAD_REST_TIME'],
+            'start_time': precondition['START_TIME'],
+            'end_time': precondition['FINISH_TIME'],
+            'load_rest_time': precondition['LOAD_REST_TIME'],
         }
-        self.selection_method = selection_method
+        self.BLOCKS = precondition['BLOCKS']
+
+        # 알고리즘 파라미터
+        self.POPULATION_SIZE = ga_params['POPULATION_SIZE']
+        self.GENERATION_SIZE = ga_params['GENERATION_SIZE']
+        self.ELITISM_RATE = ga_params['ELITISM_RATE']
+        self.MUTATION_RATE = ga_params['MUTATION_RATE']
+        self.selection_method = ga_params['SELECTION_METHOD']
+
         self.shortest_path_dict = graph.get_shortest_path_dict()
         self.population = Population(transporter_container, block_container, self.POPULATION_SIZE)
         self.population.generate_population()
@@ -83,21 +90,46 @@ class GA:
 
         return best_fitness, best_transporter_count
 
+    def calc_simility(self, individual, individual2):
+        def find_most_similar_set(target_set, other_sets): #
+            max_jaccard_sim = 0
+
+            for other_set in other_sets:
+                union = len(target_set | other_set)
+                jaccard_sim = len(target_set & other_set) / union if union != 0 else 0
+                if jaccard_sim > max_jaccard_sim:
+                    max_jaccard_sim = jaccard_sim
+
+            return max_jaccard_sim
+
+        tp_job_set_list = []
+        tp_job_set_list2 = []
+        score = 0
+        for tp_idx in range(100):
+            tp_job_set_list.append(set(block.no for block in individual[tp_idx].works))
+            tp_job_set_list2.append(set(block.no for block in individual2[tp_idx].works))
+
+        for target_set in tp_job_set_list:
+            max_jaccard_sim = find_most_similar_set(target_set, tp_job_set_list2)
+            score += max_jaccard_sim
+        return score
+
+
+
     def run_GA(self):
-        prev_transporter_count = 0
         population = self.population.get_population()
         mutation = Mutation(self.MUTATION_RATE)
         selection = Selection(self.selection_method)
-        result = {'best_individual': None, 'work_tp_count': [], 'fitness': []}
+        result = {'best_individual': None, 'best_fitness': None, 'work_tp_count': [], 'fitness': [], 'similarity': []}
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
-        self.run_schedule_ga(population)
+        prev_best_individual = population[np.argsort(fitness_values)[0]]
+        # self.run_schedule_ga(population)
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
 
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
             elites = [population[i] for i in np.argsort(fitness_values)[::-1][:elite_size]]
-
             # 자식 해 생성
             crossover_size = self.POPULATION_SIZE - elite_size
             offspring = Crossover.cross(crossover_size, fitness_values, population, self.transporter_container, selection, self.BLOCKS)
@@ -105,8 +137,8 @@ class GA:
             # 돌연 변이 연산 수행
             mutation.apply_mutation(offspring, generation, self.GENERATION_SIZE)
 
-            if generation % 250 == 0:
-                self.run_schedule_ga(offspring)
+            # if generation % 250 == 0:
+            #     self.run_schedule_ga(offspring)
             # 다음 세대 개체 집단 생성
             population = elites + offspring
 
@@ -114,14 +146,13 @@ class GA:
             fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
             sorted_fit_val = sorted(fitness_values)
 
+
             # 현재 세대에서 가장 우수한 개체 출력
             best_individual, best_transporter_count = self.get_best_solution(fitness_values, population)
 
-            # if best_transporter_count != prev_transporter_count:
-            prev_transporter_count = best_transporter_count
             len_fit = len(set(fitness_values))
             print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
-
+            result['similarity'].append(self.calc_simility(prev_best_individual, population[np.argsort(fitness_values)[0]]))
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
             # data_test(population, self.BLOCKS)
@@ -134,6 +165,8 @@ class GA:
             f'Final generation best individual: {result["work_tp_count"][-1]}, best_fitness_value: {np.max(fitness_values)}, ')
 
         result['best_individual'] = best_individual
+        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
+        print('done')
         return result
 
     def run_schedule_ga(self, population):
@@ -157,17 +190,15 @@ def print_tp(individual):
 
 if __name__ == "__main__":
     filemanager = FileManager()
-    #
     graph = Graph(node_file_path)
-    with open('pickle_data/graph.pkl', 'wb') as f:
-        pickle.dump(graph, f)
     transporter_container = filemanager.load_transporters(transporter_path)
-    block_container = filemanager.create_block_from_graph_file(node_file_path, config_dict['BLOCKS'])
+    block_container = filemanager.create_block_from_graph_file(node_file_path, precondition['BLOCKS'])
 
-    ga = GA(transporter_container, block_container, graph, config_dict, selection_method='selection2')
+
+    ga = GA(transporter_container, block_container, graph, ga_params, precondition)
     result = ga.run_GA()
 
-    with open('pickle_data/my_dict.pkl', 'wb') as f:
+    with open(f'pickle_data/ga_result_mu_rate_{ga_params["MUTATION_RATE"]}.pkl', 'wb') as f:
         pickle.dump(result, f)
 
     tp = result['best_individual']

@@ -5,7 +5,7 @@ def create_block():
     # print(block.no, block.weight, block.start_node, block.end_node,
     #       block.start_time, block.end_time, block.start_pos[0], block.start_pos[1])
 
-    with open('Blocks.csv', mode='w', newline='') as file:
+    with open('heavyBlocks.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['no', 'weight', 'start_node', 'end_node', 'start_time', 'end_time'])
 

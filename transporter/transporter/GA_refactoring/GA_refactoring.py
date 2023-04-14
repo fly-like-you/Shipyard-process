@@ -12,7 +12,7 @@ import os
 
 ga_params = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 500,
+    'GENERATION_SIZE': 1000,
     'ELITISM_RATE': 0.05,
     'MUTATION_RATE': 0.1,
     'SELECTION_METHOD': 'selection2',
@@ -44,7 +44,7 @@ def get_dir_path(target):
 
     return target_path
 
-cluster = "cluster3"
+cluster = "cluster4"
 data_path = os.path.join(get_dir_path("transporter"), "data")
 node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
@@ -172,7 +172,7 @@ class GA:
             best_individual, best_transporter_count = self.get_best_solution(fitness_values, population)
 
             len_fit = len(set(fitness_values))
-            # print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
+            print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
             result['similarity'].append(self.calc_simility(prev_best_individual, population[np.argsort(fitness_values)[0]]))
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)

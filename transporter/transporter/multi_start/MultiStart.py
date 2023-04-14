@@ -27,11 +27,6 @@ def get_dir_path(target):
 
     return target_path
 
-cluster = "cluster4"
-data_path = os.path.join(get_dir_path("transporter"), "data")
-node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
-transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
-block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
 
 
 class MultiStart:
@@ -55,6 +50,11 @@ class MultiStart:
 
 
 
+cluster = "cluster4"
+data_path = os.path.join(get_dir_path("transporter"), "data")
+node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
+transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
 
 
 if __name__ == "__main__":
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     }
     result = []
 
-    for i in range(300):
+    for i in range(1000):
         print(i)
         multi_start = MultiStart(transporter_container, block_container, graph, 100, time_set)
         multi_start.run()
@@ -94,7 +94,7 @@ if __name__ == "__main__":
             'fitness': a,
         })
     df_results = pd.DataFrame(result).sort_values(by='fitness', ascending=False)
-    df_results.to_pickle(f'cluster/{cluster}_multi_start(len300).pkl')
+    df_results.to_pickle(f'cluster/{cluster}_multi_start(len1000).pkl')
 
     print(result)
 

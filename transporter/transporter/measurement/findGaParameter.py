@@ -6,7 +6,7 @@ from transporter.transporter.create_data.FileManager import FileManager
 from transporter.transporter.create_data.Graph import Graph
 import pandas as pd
 
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node(cluster3).csv")
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
 block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 filemanager = FileManager()

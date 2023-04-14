@@ -47,7 +47,7 @@ class Graph:
 
 
 
-# node_file_path = os.path.join(os.getcwd(), "data", "node.csv")
+# node_file_path = os.path.join(os.getcwd(), "data", "node(cluster3).csv")
 # g = Graph()
 # g.from_csv(node_file_path)
 # g.draw()

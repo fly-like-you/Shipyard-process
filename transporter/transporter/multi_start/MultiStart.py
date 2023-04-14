@@ -8,7 +8,7 @@ from transporter.transporter.create_data.Graph import Graph
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 import os
 
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node(cluster3).csv")
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
 block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 

@@ -24,7 +24,7 @@ transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'trans
 random_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 heavy_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'heavyBlocks.csv')
 light_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'lightBlocks.csv')
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node(cluster3).csv")
 
 file_manager = FileManager()
 graph = Graph(node_file_path)

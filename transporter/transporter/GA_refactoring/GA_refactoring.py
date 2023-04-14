@@ -25,7 +25,7 @@ precondition = {
     'BLOCKS': 100,  # 전제
 }
 
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node.csv")
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data","node(cluster3).csv")
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
 block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
 
@@ -198,8 +198,8 @@ if __name__ == "__main__":
     ga = GA(transporter_container, block_container, graph, ga_params, precondition)
     result = ga.run_GA()
 
-    with open(f'pickle_data/ga_result_mu_rate_{ga_params["MUTATION_RATE"]}.pkl', 'wb') as f:
-        pickle.dump(result, f)
+    # with open(f'pickle_data/ga_result_mu_rate_{ga_params["MUTATION_RATE"]}.pkl', 'wb') as f:
+    #     pickle.dump(result, f)
 
     tp = result['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)

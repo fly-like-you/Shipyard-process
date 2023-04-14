@@ -6,9 +6,33 @@ from transporter.data.create_data.Graph import Graph
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 import os
 
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "nodes_and_blocks", "node(cluster3).csv")
-transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'transporter.csv')
-block_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'Blocks.csv')
+def get_dir_path(target):
+    file_path = os.getcwd()
+    target_dir = target
+
+    # 경로를 분할합니다.
+    path_parts = os.path.normpath(file_path).split(os.sep)
+
+    # 특정 디렉터리까지의 인덱스를 찾습니다.
+    index = path_parts.index(target_dir)
+
+    # 해당 인덱스까지의 경로를 조합합니다.
+    target_path_parts = path_parts[:index + 1]
+
+    # 드라이브 문자와 경로를 올바르게 결합합니다.
+    if os.name == 'nt' and len(target_path_parts[0]) == 2:  # 윈도우 드라이브 문자 (예: C:)
+        target_path = os.path.join(target_path_parts[0] + os.sep, *target_path_parts[1:])
+    else:
+        target_path = os.path.join(*target_path_parts)
+
+    return target_path
+
+cluster = "cluster4"
+data_path = os.path.join(get_dir_path("transporter"), "data")
+node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
+transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
+
 
 class MultiStart:
     def __init__(self, transporter_container, block_container, graph, size, time_set):
@@ -70,7 +94,7 @@ if __name__ == "__main__":
             'fitness': a,
         })
     df_results = pd.DataFrame(result).sort_values(by='fitness', ascending=False)
-    df_results.to_pickle(f'multi_start(len300).pkl')
+    df_results.to_pickle(f'cluster/{cluster}_multi_start(len300).pkl')
 
     print(result)
 

@@ -44,11 +44,11 @@ def get_dir_path(target):
 
     return target_path
 
-
+cluster = "cluster3"
 data_path = os.path.join(get_dir_path("transporter"), "data")
-node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "node(cluster2).csv")
+node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
-block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block(cluster2).csv")
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
 
 class SetSizeException(Exception):
     pass
@@ -111,7 +111,7 @@ class GA:
         return best_fitness, best_transporter_count
 
     def calc_simility(self, individual, individual2):
-        def find_most_similar_set(target_set, other_sets): #
+        def find_most_similar_set(target_set, other_sets):
             max_jaccard_sim = 0
 
             for other_set in other_sets:
@@ -159,6 +159,7 @@ class GA:
 
             # if generation % 250 == 0:
             #     self.run_schedule_ga(offspring)
+
             # 다음 세대 개체 집단 생성
             population = elites + offspring
 
@@ -171,7 +172,7 @@ class GA:
             best_individual, best_transporter_count = self.get_best_solution(fitness_values, population)
 
             len_fit = len(set(fitness_values))
-            print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
+            # print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
             result['similarity'].append(self.calc_simility(prev_best_individual, population[np.argsort(fitness_values)[0]]))
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)

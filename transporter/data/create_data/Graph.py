@@ -41,16 +41,9 @@ class Graph:
     def draw(self):
         pos = nx.get_node_attributes(self.graph, "pos")
         labels = nx.get_edge_attributes(self.graph, "weight")
+        fig = plt.figure(figsize=(8, 6), dpi=500)
         nx.draw(self.graph, pos=pos, with_labels=True, node_size=50, font_size=5)
         nx.draw_networkx_edge_labels(self.graph, pos, edge_labels=labels, font_size=5)
         plt.show()
 
 
-
-# node_file_path = os.path.join(os.getcwd(), "data", "node(cluster3).csv")
-# g = Graph()
-# g.from_csv(node_file_path)
-# g.draw()
-#
-# distance = nx.shortest_path_length(g.graph, source=1, target=24, weight='weight')
-# print(distance)

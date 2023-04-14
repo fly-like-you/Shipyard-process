@@ -1,13 +1,13 @@
 import os
 import unittest
 from transporter.transporter.GA_refactoring.GA_refactoring import GA
-from transporter.transporter.create_data.FileManager import FileManager
-from transporter.transporter.create_data.Graph import Graph
+from transporter.data.create_data.FileManager import FileManager
+from transporter.data.create_data.Graph import Graph
 
 # 박준호가 작성한 GA_refactoring 파일의 코드를 테스트하는 코드입니다.
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node(cluster3).csv")
-block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'blocks.csv')
-transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "nodes_and_blocks", "node(cluster3).csv")
+block_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'blocks.csv')
+transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'transporter.csv')
 
 config_dict = {
     'POPULATION_SIZE': 10,  # 한 세대에서의 인구 수를 설정합니다.
@@ -25,7 +25,7 @@ class MyTestCase(unittest.TestCase):
     file_manager = FileManager()
     graph = Graph(node_file_path)
     transporter_container = file_manager.load_transporters(transporter_path)
-    block_container = file_manager.create_block_from_graph_file(node_file_path, 100)
+    block_container = file_manager.load_block_data(block_path)
 
     ga = GA(transporter_container, block_container, graph, config_dict, selection_method='square_roulette')
     best_individual = ga.run_GA()['best_individual']

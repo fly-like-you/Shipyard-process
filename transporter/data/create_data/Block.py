@@ -1,4 +1,3 @@
-from transporter.transporter.create_data.Graph import Graph
 class Block:
     def __init__(self, no, weight, start_node, end_node, start_time, end_time):
         self.no = no  # 블록 번호

@@ -1,31 +1,32 @@
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
-from transporter.transporter.create_data.Block import Block
-from transporter.transporter.create_data.FileManager import FileManager
-from transporter.transporter.create_data.Graph import Graph
+from transporter.data.create_data.Block import Block
+from transporter.data.create_data.FileManager import FileManager
+from transporter.data.create_data.Graph import Graph
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
 import imageio
 import os
 
-node_file_path = os.path.join(os.getcwd(), "create_data", "data", "node(temp).csv")
-transporter_path = os.path.join(os.getcwd(), 'create_data', 'data', 'transporter.csv')
-block_path = os.path.join(os.getcwd(), 'create_data', 'data', 'Blocks.csv')
+
+data_path = os.path.join(os.getcwd(), "../data")
+node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "node(cluster2).csv")
+transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block(cluster2).csv")
 
 graph = Graph(node_file_path)
 shortest_path_dict = graph.get_shortest_path_dict()
 graph = graph.graph
 
 file_manager = FileManager()
-# block_container = file_manager.load_block_data(block_path)
-block_container = file_manager.create_block_from_graph_file(node_file_path, 100)
+block_container = file_manager.load_block_data(block_path)
 
 # 랜덤으로 블록 선택
 blocks = []
 tp_moving = []
 
 for i in range(10):
-    rand1, rand2 = random.sample(range(1, 52), k=2)
+    rand1, rand2 = random.sample(range(1, 18), k=2)
 
     block = Block(i + 1, 1, rand1, rand2, 1, 1)
     # block = random.sample(block_container, k=1)

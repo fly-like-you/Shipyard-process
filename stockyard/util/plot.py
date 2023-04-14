@@ -46,13 +46,13 @@ def boxplot_2d(x,y, ax, fc, label, whis=1.5):
     ##interquartile range (Q3-Q1), the upper whisker will extend to
     ##last datum less than Q3 + whis*IQR). Similarly, the lower whisker
     ####will extend to the first datum greater than Q1 - whis*IQR. Beyond
-    ##the whiskers, data are considered outliers and are plotted as
+    ##the whiskers, nodes_and_blocks are considered outliers and are plotted as
     ##individual points. Set this to an unreasonably high value to force
     ##the whiskers to show the min and max values. Alternatively, set this
     ##to an ascending sequence of percentile (e.g., [5, 95]) to set the
-    ##whiskers at specific percentiles of the data. Finally, whis can
+    ##whiskers at specific percentiles of the nodes_and_blocks. Finally, whis can
     ##be the string 'range' to force the whiskers to the min and max of
-    ##the data.
+    ##the nodes_and_blocks.
     iqr = xlimits[2]-xlimits[0]
 
     ##left

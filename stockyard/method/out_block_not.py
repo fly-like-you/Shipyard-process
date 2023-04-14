@@ -56,13 +56,13 @@ def out(block, map1, count, flag, df, curr):
         #     # # 데이터 프레임 추가
         #
         #     # 데이터 삭제
-        #     for index, j in enumerate(map1.data):  # 블록 데이터 pop
+        #     for index, j in enumerate(map1.nodes_and_blocks):  # 블록 데이터 pop
         #         if j['block_number'] == x:
         #             obstruct_block_index = index
         #
         #     # # 데이터 프레임 추가
-        #     temp = pd.DataFrame(map1.data[obstruct_block_index], index=[0])
-        #     erase = pd.Series(map1.data[obstruct_block_index])
+        #     temp = pd.DataFrame(map1.nodes_and_blocks[obstruct_block_index], index=[0])
+        #     erase = pd.Series(map1.nodes_and_blocks[obstruct_block_index])
         #     temp['date'] = df.loc[curr]['date']
         #     temp['type'] = 1
         #     temp1 = df[df.index <= curr]
@@ -71,7 +71,7 @@ def out(block, map1, count, flag, df, curr):
         #     df = pd.concat([df, temp2], axis=0, ignore_index=True)
         #
         #     # print(map1.block_num_map())
-        #     map1.data.pop(obstruct_block_index)
+        #     map1.nodes_and_blocks.pop(obstruct_block_index)
         #
         #     erase_map(erase, map1)
         #
@@ -82,7 +82,7 @@ def out(block, map1, count, flag, df, curr):
     else:
         pass
 
-    # map1.data.pop(curr_block_index)
+    # map1.nodes_and_blocks.pop(curr_block_index)
     erase_map(block, map1)
 
     return count, df
@@ -205,9 +205,9 @@ def find_out(block_list, block, flag, map, num_map):
 
             # # 블록들 제거
             # for num, i in enumerate(can_out_block):
-            #     for index, j in enumerate(map1.data):  # 블록 데이터 pop
+            #     for index, j in enumerate(map1.nodes_and_blocks):  # 블록 데이터 pop
             #         if j['block_number'] == i['block_number']:
-            #             map1.data.pop(index)
+            #             map1.nodes_and_blocks.pop(index)
 
             num_map = map1.block_num_map()
             # print(obstruct_dict)

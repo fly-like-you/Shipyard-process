@@ -1,15 +1,14 @@
 import numpy as np
 
-from transporter.transporter.create_data.Graph import Graph
-from transporter.transporter.measurement.DrawingFunctionPerformance import DrawingFunctionPerformance
-from transporter.transporter.create_data.FileManager import FileManager
+from transporter.data.create_data.Graph import Graph
+from transporter.measurement.DrawingFunctionPerformance import DrawingFunctionPerformance
+from transporter.data.create_data.FileManager import FileManager
 from transporter.transporter.GA_refactoring.GA_refactoring import GA
 from transporter.transporter.GA_legacy.GA_legacy import run_ga
 import os
 import matplotlib.pyplot as plt
 from matplotlib import font_manager, rc
 
-from transporter.transporter.multi_start.MultiStart import MultiStart
 # 폰트 세팅 맥
 # font_path = r'C:\Windows\Fonts\gulim.ttc'
 # font = font_manager.FontProperties(fname=font_path).get_name()
@@ -20,11 +19,11 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 rc('font', family=font)
 plt.rcParams['axes.unicode_minus'] = False
 
-transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
-random_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
-heavy_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'heavyBlocks.csv')
-light_block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'lightBlocks.csv')
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node(cluster3).csv")
+transporter_path = os.path.join(os.getcwd(), '../transporter', 'create_data', 'nodes_and_blocks', 'transporter.csv')
+random_block_path = os.path.join(os.getcwd(), '../transporter', 'create_data', 'nodes_and_blocks', 'Blocks.csv')
+heavy_block_path = os.path.join(os.getcwd(), '../transporter', 'create_data', 'nodes_and_blocks', 'heavyBlocks.csv')
+light_block_path = os.path.join(os.getcwd(), '../transporter', 'create_data', 'nodes_and_blocks', 'lightBlocks.csv')
+node_file_path = os.path.join(os.getcwd(), '../transporter', "create_data", "nodes_and_blocks", "node(cluster3).csv")
 
 file_manager = FileManager()
 graph = Graph(node_file_path)

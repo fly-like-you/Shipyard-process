@@ -301,9 +301,9 @@ def find_out(block_list, block, flag, map, num_map):
 
             # # 블록들 제거
             # for num, i in enumerate(can_out_block):
-            #     for index, j in enumerate(map1.data):  # 블록 데이터 pop
+            #     for index, j in enumerate(map1.nodes_and_blocks):  # 블록 데이터 pop
             #         if j['block_number'] == i['block_number']:
-            #             map1.data.pop(index)
+            #             map1.nodes_and_blocks.pop(index)
 
             num_map = map1.block_num_map()
             # print(num_map)

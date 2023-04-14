@@ -181,8 +181,8 @@ def insert(block, map1, weight_map, count, area, df, flag, i, exist_block_num, b
     block_data['weight_val'] = max_weight
 
     map1.block_data(block_data)  # 맵 객체에 블록 데이터 추가
-    # print(map1.data)
-    # print(len(map1.data))
+    # print(map1.nodes_and_blocks)
+    # print(len(map1.nodes_and_blocks))
     return count, area
 
 

@@ -2,7 +2,7 @@ import os
 import copy
 import math
 import random
-from transporter.transporter.create_data.FileManager import FileManager
+from transporter.data.create_data.FileManager import FileManager
 
 # 상수 정의
 FINISH_TIME = 18
@@ -372,8 +372,8 @@ def run_ga(transporters, blocks):
 def GA_legacy():
     file_manager = FileManager()
 
-    transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
-    block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'blocks.csv')
+    transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'transporter.csv')
+    block_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'blocks.csv')
 
     transporter_container = file_manager.load_transporters(transporter_path)
     block_container = file_manager.load_block_data(block_path, 100)

@@ -1,13 +1,12 @@
-from transporter.transporter.create_data.FileManager import FileManager
+from transporter.data.create_data.FileManager import FileManager
 from transporter.transporter.GA_refactoring.Mutation import Mutation
 from transporter.transporter.GA_refactoring.Selection import Selection
 from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
-from transporter.transporter.create_data.Graph import Graph
+from transporter.data.create_data.Graph import Graph
 import numpy as np
-import pickle
 import time
 import os
 
@@ -15,7 +14,7 @@ ga_params = {
     'POPULATION_SIZE': 100,
     'GENERATION_SIZE': 500,
     'ELITISM_RATE': 0.05,
-    'MUTATION_RATE': 1,
+    'MUTATION_RATE': 0.1,
     'SELECTION_METHOD': 'selection2',
 }
 precondition = {
@@ -24,11 +23,10 @@ precondition = {
     'LOAD_REST_TIME': 0.3,  # 전제
     'BLOCKS': 100,  # 전제
 }
-
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data","node(cluster3).csv")
-transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
-block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
-
+data_path = os.path.join(os.getcwd(), "../../data")
+node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "node(cluster2).csv")
+transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block(cluster2).csv")
 
 class SetSizeException(Exception):
     pass
@@ -192,7 +190,7 @@ if __name__ == "__main__":
     filemanager = FileManager()
     graph = Graph(node_file_path)
     transporter_container = filemanager.load_transporters(transporter_path)
-    block_container = filemanager.create_block_from_graph_file(node_file_path, precondition['BLOCKS'])
+    block_container = filemanager.load_block_data(block_path)
 
 
     ga = GA(transporter_container, block_container, graph, ga_params, precondition)

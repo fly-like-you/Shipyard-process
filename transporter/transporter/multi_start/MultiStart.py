@@ -1,16 +1,14 @@
-import pickle
-
 import pandas as pd
 
 from transporter.transporter.GA_refactoring.Population import Population
-from transporter.transporter.create_data.FileManager import FileManager
-from transporter.transporter.create_data.Graph import Graph
+from transporter.data.create_data.FileManager import FileManager
+from transporter.data.create_data.Graph import Graph
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 import os
 
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "data", "node(cluster3).csv")
-transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'transporter.csv')
-block_path = os.path.join(os.getcwd(), '..', 'create_data', 'data', 'Blocks.csv')
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "nodes_and_blocks", "node(cluster3).csv")
+transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'transporter.csv')
+block_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'Blocks.csv')
 
 class MultiStart:
     def __init__(self, transporter_container, block_container, graph, size, time_set):

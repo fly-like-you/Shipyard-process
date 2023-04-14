@@ -6,8 +6,8 @@ import numpy as np
 from transporter.transporter.GA_schedule.Crossover import Crossover
 from transporter.transporter.GA_schedule.Selection import Selection
 from transporter.transporter.GA_schedule.Mutation import Mutation
-from transporter.transporter.create_data.Block import Block
-from transporter.transporter.create_data.Graph import Graph
+from transporter.data.create_data.Block import Block
+from transporter.data.create_data.Graph import Graph
 
 class ScheduleGA:
     def __init__(self, blocks, shortest_path_dict, population_size=10, max_generation=100, elitism_rate=0.3, mutation_rate=0.2):
@@ -79,7 +79,7 @@ class ScheduleGA:
 
 
 if __name__ == '__main__':
-    node_file_path = os.path.join(os.getcwd(), "..", "create_data", "data", "node(cluster3).csv")
+    node_file_path = os.path.join(os.getcwd(), "..", "create_data", "nodes_and_blocks", "node(cluster3).csv")
     graph = Graph(node_file_path)
     shortest_path_dict = graph.get_shortest_path_dict()
     blocks = []

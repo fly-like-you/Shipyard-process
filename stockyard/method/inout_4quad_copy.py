@@ -179,8 +179,8 @@ def insert(block, map1, weight_map, count, area, df, flag, i, branch):
     block_data['weight_val'] = max_weight
 
     map1.block_data(block_data)  # 맵 객체에 블록 데이터 추가
-    # print(map1.data)
-    # print(len(map1.data))
+    # print(map1.nodes_and_blocks)
+    # print(len(map1.nodes_and_blocks))
     return count, area
 
 
@@ -316,7 +316,7 @@ def out(block, map1, count, flag, df, curr):
     else:
         pass
 
-    # map1.data.pop(curr_block_index)
+    # map1.nodes_and_blocks.pop(curr_block_index)
     erase_map(block, map1)
 
     return count, df
@@ -457,9 +457,9 @@ def find_out(block_list, block, flag, map, num_map, df):
 
             # # 블록들 제거
             # for num, i in enumerate(can_out_block):
-            #     for index, j in enumerate(map1.data):  # 블록 데이터 pop
+            #     for index, j in enumerate(map1.nodes_and_blocks):  # 블록 데이터 pop
             #         if j['block_number'] == i['block_number']:
-            #             map1.data.pop(index)
+            #             map1.nodes_and_blocks.pop(index)
 
             num_map = map1.block_num_map()
             # print(num_map)

@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 from transporter.transporter.GA_schedule.Selection import Selection
-
+from transporter.data.create_data.FileManager import FileManager
+import os
 
 def plot_multiple_list_data(data_list, dot_list=None, color_list=None):
     if not color_list:
@@ -23,10 +24,12 @@ def plot_multiple_list_data(data_list, dot_list=None, color_list=None):
 
     plt.show()
 
+data_path = os.path.join(os.getcwd(), "../../data")
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block(cluster2).csv")
 
-
-
-ga = ScheduleGA(blocks, population_size=10, max_generation=300)
+file_manager = FileManager()
+block_container = file_manager.load_block_data(block_path)
+ga = ScheduleGA(block_container, population_size=10, max_generation=300)
 select_size = 50
 data_list = []
 dot_list = []

@@ -23,7 +23,29 @@ precondition = {
     'LOAD_REST_TIME': 0.3,  # 전제
     'BLOCKS': 100,  # 전제
 }
-data_path = os.path.join(os.getcwd(), "../../data")
+def get_dir_path(target):
+    file_path = os.getcwd()
+    target_dir = target
+
+    # 경로를 분할합니다.
+    path_parts = os.path.normpath(file_path).split(os.sep)
+
+    # 특정 디렉터리까지의 인덱스를 찾습니다.
+    index = path_parts.index(target_dir)
+
+    # 해당 인덱스까지의 경로를 조합합니다.
+    target_path_parts = path_parts[:index + 1]
+
+    # 드라이브 문자와 경로를 올바르게 결합합니다.
+    if os.name == 'nt' and len(target_path_parts[0]) == 2:  # 윈도우 드라이브 문자 (예: C:)
+        target_path = os.path.join(target_path_parts[0] + os.sep, *target_path_parts[1:])
+    else:
+        target_path = os.path.join(*target_path_parts)
+
+    return target_path
+
+
+data_path = os.path.join(get_dir_path("transporter"), "data")
 node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "node(cluster2).csv")
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
 block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block(cluster2).csv")

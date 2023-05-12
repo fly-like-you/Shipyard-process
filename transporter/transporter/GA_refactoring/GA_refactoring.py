@@ -1,3 +1,5 @@
+import pickle
+
 from transporter.data.create_data.FileManager import FileManager
 from transporter.transporter.GA_refactoring.Mutation import Mutation
 from transporter.transporter.GA_refactoring.Selection import Selection
@@ -140,7 +142,9 @@ class GA:
         population = self.population.get_population()
         mutation = Mutation(self.MUTATION_RATE)
         selection = Selection(self.selection_method)
-        result = {'best_individual': None, 'best_fitness': None, 'work_tp_count': [], 'fitness': [], 'similarity': []}
+        result = {'best_individual': None, 'best_fitness': None, 'best_distance': None,
+                  'work_tp_count': [], 'fitness': [], 'similarity': [],
+        }
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
         prev_best_individual = population[np.argsort(fitness_values)[0]]
         # self.run_schedule_ga(population)
@@ -172,11 +176,10 @@ class GA:
             best_individual, best_transporter_count = self.get_best_solution(fitness_values, population)
 
             len_fit = len(set(fitness_values))
-            print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
+            # print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
             result['similarity'].append(self.calc_simility(prev_best_individual, population[np.argsort(fitness_values)[0]]))
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
-            # data_test(population, self.BLOCKS)
 
 
         # 최종 세대에서 가장 우수한 개체 출력
@@ -187,6 +190,7 @@ class GA:
 
         result['best_individual'] = best_individual
         result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
+        result['best_distance'] = Fitness.individual_distance(best_individual, self.shortest_path_dict)
         print('done')
         return result
 
@@ -219,8 +223,8 @@ if __name__ == "__main__":
     ga = GA(transporter_container, block_container, graph, ga_params, precondition)
     result = ga.run_GA()
 
-    # with open(f'pickle_data/ga_result_mu_rate_{ga_params["MUTATION_RATE"]}.pkl', 'wb') as f:
-    #     pickle.dump(result, f)
+    with open(f'pickle_data/GA_{cluster}.pkl', 'wb') as f:
+        pickle.dump(result, f)
 
     tp = result['best_individual']
     tp.sort(key=lambda x: x.available_weight * x.work_speed, reverse=True)

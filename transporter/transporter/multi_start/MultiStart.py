@@ -5,6 +5,7 @@ from transporter.data.create_data.FileManager import FileManager
 from transporter.data.create_data.Graph import Graph
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 import os
+import numpy as np
 
 def get_dir_path(target):
     file_path = os.getcwd()
@@ -38,6 +39,8 @@ class MultiStart:
         self.shortest_path_dict = graph.get_shortest_path_dict()
         self.time_set = time_set
         self.fitness_values = None
+        self.best_fitness = None
+        self.best_distance = None
 
 
     def run(self):
@@ -47,10 +50,12 @@ class MultiStart:
         population = population.get_population()
 
         self.fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set)
+        best_individual = population[np.argsort(self.fitness_values)[-1]]
+        self.best_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
+        self.best_distance = Fitness.individual_distance(best_individual, self.shortest_path_dict)
 
 
-
-cluster = "cluster4"
+cluster = "cluster3"
 data_path = os.path.join(get_dir_path("transporter"), "data")
 node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
@@ -85,13 +90,14 @@ if __name__ == "__main__":
     }
     result = []
 
-    for i in range(1000):
+    for i in range(50000):
         print(i)
         multi_start = MultiStart(transporter_container, block_container, graph, 100, time_set)
         multi_start.run()
         a = sorted(multi_start.fitness_values, reverse=True)[0]
         result.append({
-            'fitness': a,
+            'fitness': multi_start.best_fitness,
+            'distance': multi_start.best_distance,
         })
     df_results = pd.DataFrame(result).sort_values(by='fitness', ascending=False)
     df_results.to_pickle(f'cluster/{cluster}_multi_start(len1000).pkl')

@@ -6,7 +6,7 @@ import os
 
 ga_params = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 300,
+    'GENERATION_SIZE': 500,
     'ELITISM_RATE': 0.05,
     'MUTATION_RATE': 0.1,
     'SELECTION_METHOD': 'selection2',
@@ -45,10 +45,13 @@ def random_search(num_samples=30):
         print(f"{i+1}번째 데이터분석")
 
         ga = GA(transporter_container, block_container, graph, ga_params, precondition)
-        score = ga.run_GA()['best_fitness']
+        ga_result = ga.run_GA()
+        score = ga_result['best_fitness']
+        distance = ga_result['best_distance']
         # 모델 학습 및 평가
         results.append({
             'fitness': score,
+            'distance': distance
         })
         print(f"최고 점수 {score}")
 
@@ -59,7 +62,7 @@ def random_search(num_samples=30):
     df_results.to_pickle(f"GA_{cluster}_{ga_params['GENERATION_SIZE']}_len30.pkl")
 
 
-cluster = "cluster4"
+cluster = "cluster2"
 data_path = os.path.join(get_dir_path("transporter"), "data")
 node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')

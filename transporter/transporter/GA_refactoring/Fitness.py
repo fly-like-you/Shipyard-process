@@ -56,3 +56,21 @@ class Fitness:
     @staticmethod
     def get_fitness_list(population, shortest_path_dict, time_set):
         return [Fitness.fitness(p, time_set, shortest_path_dict) for p in population]
+
+    @staticmethod
+    def individual_distance(individual, shortest_path_dict):
+        DOCK = 1  # 트랜스포터 시작 노드
+        fitness_score = 0
+
+        for transporter in individual:
+            cur_node = DOCK  # 현재 위치는 도크
+
+            for block in transporter.works:
+                # 트랜스포터 위치 -> 블록 시작 위치
+                load_to_block_dist = shortest_path_dict[cur_node][block.start_node] / 1000  # 이전 위치에서 현재 블록까지 이동한 거리
+                # 블록 시작 위치 -> 블록 적재 위치
+                block_delivery_dist = shortest_path_dict[block.start_node][block.end_node] / 1000
+                fitness_score += load_to_block_dist + block_delivery_dist
+                cur_node = block.end_node  # 현재 위치를 블록의 종료 위치로 업데이트
+
+        return fitness_score

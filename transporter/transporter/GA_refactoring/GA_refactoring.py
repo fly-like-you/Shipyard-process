@@ -7,7 +7,9 @@ from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
+from transporter.transporter.GA_refactoring.LocalSearch import LocalSearch
 from transporter.data.create_data.Graph import Graph
+
 import numpy as np
 import time
 import os
@@ -142,6 +144,7 @@ class GA:
         population = self.population.get_population()
         mutation = Mutation(self.MUTATION_RATE)
         selection = Selection(self.selection_method)
+        local_search = LocalSearch(self.time_set, self.shortest_path_dict)
         result = {'best_individual': None, 'best_fitness': None, 'best_distance': None,
                   'work_tp_count': [], 'fitness': [], 'similarity': [],
         }
@@ -167,6 +170,9 @@ class GA:
 
             # 다음 세대 개체 집단 생성
             population = elites + offspring
+
+            # 지역 탐색 연산 수행
+            local_search.do_search(population)
 
             # 각 개체의 적합도 계산
             fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)

@@ -16,7 +16,7 @@ import os
 
 ga_params = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 1000,
+    'GENERATION_SIZE': 500,
     'ELITISM_RATE': 0.05,
     'MUTATION_RATE': 0.1,
     'SELECTION_METHOD': 'selection2',
@@ -45,14 +45,15 @@ def get_dir_path(target):
         target_path = os.path.join(target_path_parts[0] + os.sep, *target_path_parts[1:])
     else:
         target_path = os.path.join(*target_path_parts)
+        target_path = "/" + target_path
 
     return target_path
 
-cluster = "cluster4"
+cluster = "cluster3"
 data_path = os.path.join(get_dir_path("transporter"), "data")
-node_file_path = os.path.join("/" + data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
-transporter_path = os.path.join("/" + data_path, 'transporters', 'transporter.csv')
-block_path = os.path.join("/" + data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
+node_file_path = os.path.join( data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
+transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
 
 class SetSizeException(Exception):
     pass
@@ -114,30 +115,6 @@ class GA:
 
         return best_fitness, best_transporter_count
 
-    def calc_simility(self, individual, individual2):
-        def find_most_similar_set(target_set, other_sets):
-            max_jaccard_sim = 0
-
-            for other_set in other_sets:
-                union = len(target_set | other_set)
-                jaccard_sim = len(target_set & other_set) / union if union != 0 else 0
-                if jaccard_sim > max_jaccard_sim:
-                    max_jaccard_sim = jaccard_sim
-
-            return max_jaccard_sim
-
-        tp_job_set_list = []
-        tp_job_set_list2 = []
-        score = 0
-        for tp_idx in range(100):
-            tp_job_set_list.append(set(block.no for block in individual[tp_idx].works))
-            tp_job_set_list2.append(set(block.no for block in individual2[tp_idx].works))
-
-        for target_set in tp_job_set_list:
-            max_jaccard_sim = find_most_similar_set(target_set, tp_job_set_list2)
-            score += max_jaccard_sim
-        return score
-
 
 
     def run_GA(self):
@@ -146,7 +123,7 @@ class GA:
         selection = Selection(self.selection_method)
         local_search = LocalSearch(self.time_set, self.shortest_path_dict)
         result = {'best_individual': None, 'best_fitness': None, 'best_distance': None,
-                  'work_tp_count': [], 'fitness': [], 'similarity': [],
+                  'work_tp_count': [], 'fitness': [],
         }
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
         prev_best_individual = population[np.argsort(fitness_values)[0]]
@@ -184,7 +161,6 @@ class GA:
 
             len_fit = len(set(fitness_values))
             print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
-            result['similarity'].append(self.calc_simility(prev_best_individual, population[np.argsort(fitness_values)[0]]))
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
 

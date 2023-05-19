@@ -16,11 +16,11 @@ class LocalSearch:
 
     def local_search(self, individual):
         # 지역 탐색 함수
-        cur_individual = copy.deepcopy(individual)
-        cur_individual_fitness = Fitness.fitness(cur_individual, self.time_set, self.shortest_path_dict)
+        cur_individual_fitness = Fitness.fitness(individual, self.time_set, self.shortest_path_dict)
 
+        local_individual = copy.deepcopy(individual)
 
-        transporter_li = [t for t in cur_individual if len(t.works) > 0]
+        transporter_li = [t for t in local_individual if len(t.works) > 0]
         transporter_li.sort(key=lambda t: len(t.works))
 
         min_len_trans, max_len_trans = random.sample(transporter_li[:5], k=2)
@@ -28,20 +28,19 @@ class LocalSearch:
         if len(min_len_trans.works) > len(max_len_trans.works):
             min_len_trans, max_len_trans = max_len_trans, min_len_trans
 
-        max_len_trans_index = cur_individual.index(max_len_trans)
-        min_len_trans_index = cur_individual.index(min_len_trans)
+        max_len_trans_index = local_individual.index(max_len_trans)
+        min_len_trans_index = local_individual.index(min_len_trans)
 
-        max_len_trans_works = cur_individual[max_len_trans_index].works
-        min_len_trans_works = cur_individual[min_len_trans_index].works
+        max_len_trans_works = local_individual[max_len_trans_index].works
+        min_len_trans_works = local_individual[min_len_trans_index].works
 
-        insert_block = random.choice(min_len_trans_works)
-
+        # 블록 하나만 교체
+        insert_block = min_len_trans_works.pop(random.randint(0, len(min_len_trans_works) - 1))
         max_len_trans_works.insert(random.randint(0, len(max_len_trans_works) - 1), insert_block)
-        cur_individual[min_len_trans_index].works = [b for b in min_len_trans_works if b.no != insert_block.no]
 
-        local_search_fitness = Fitness.fitness(individual, self.time_set, self.shortest_path_dict)
+        local_search_fitness = Fitness.fitness(local_individual, self.time_set, self.shortest_path_dict)
 
         if local_search_fitness > cur_individual_fitness:
-            return individual
+            return local_individual
         else:
-            return cur_individual
+            return individual

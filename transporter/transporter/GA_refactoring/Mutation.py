@@ -7,12 +7,25 @@ class Mutation:
         self.mutation_rate = mutation_rate
 
     def mutation(self, individual):
-        for _ in range(len(individual) // 20):
+        for _ in range(len(individual)):
             rand_idx = random.randint(0, len(individual) - 1)
 
             works_len = len(individual[rand_idx].works)
             if works_len >= 2:
                 random.shuffle(individual[rand_idx].works)
+
+    def pop_mutation(self, individual):
+        for _ in range(len(individual)):
+
+            rand_idx1, rand_idx2 = random.sample(range(len(individual) - 1), 2)
+
+            work_pop = individual[rand_idx1].works
+            work_insert = individual[rand_idx1].works
+            if work_pop:
+                block = work_pop.pop(random.randint(0, len(work_pop) - 1))
+                insert_idx = random.randint(0, len(work_insert) - 1) if len(work_insert) != 0 else 0
+                work_insert.insert(insert_idx, block)
+
 
 
 
@@ -42,6 +55,7 @@ class Mutation:
         for individual in population:
             if random.random() < mutation_rate:
                 self.mutation(individual)
+                self.pop_mutation(individual)
             # if random.random() < mutation_rate:
             #     self.mutation2(individual)
 

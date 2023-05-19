@@ -154,6 +154,7 @@ class GA:
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
             elites = [population[i] for i in np.argsort(fitness_values)[::-1][:elite_size]]
+
             # 자식 해 생성
             crossover_size = self.POPULATION_SIZE - elite_size
             offspring = Crossover.cross(crossover_size, fitness_values, population, self.transporter_container, selection, self.BLOCKS)
@@ -162,7 +163,7 @@ class GA:
             mutation.apply_mutation(offspring, generation, self.GENERATION_SIZE)
 
             # if generation % 250 == 0:
-            #     self.run_schedule_ga(offspring)
+            # self.run_schedule_ga(offspring)
 
             # 다음 세대 개체 집단 생성
             population = elites + offspring
@@ -176,7 +177,7 @@ class GA:
             best_individual, best_transporter_count = self.get_best_solution(fitness_values, population)
 
             len_fit = len(set(fitness_values))
-            # print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
+            print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
             result['similarity'].append(self.calc_simility(prev_best_individual, population[np.argsort(fitness_values)[0]]))
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
@@ -204,7 +205,6 @@ class GA:
                     transporter.works = scheduling.run()
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"Parallel optimization took {elapsed_time:.2f} seconds.")
 
 
 def print_tp(individual):

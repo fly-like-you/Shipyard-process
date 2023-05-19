@@ -6,6 +6,7 @@ class Mutation:
     def __init__(self, mutation_rate):
         self.mutation_rate = mutation_rate
 
+    # 트랜스포터의 작업량이asdasdasdasd
     def mutation(self, individual):
         transporter_li = [t for t in individual if len(t.works) > 0]
         transporter_li.sort(key=lambda t: len(t.works))

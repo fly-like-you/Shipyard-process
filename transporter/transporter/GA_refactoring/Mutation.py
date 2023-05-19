@@ -6,30 +6,15 @@ class Mutation:
     def __init__(self, mutation_rate):
         self.mutation_rate = mutation_rate
 
-    # 트랜스포터의 작업량이asdasdasdasd
     def mutation(self, individual):
-        transporter_li = [t for t in individual if len(t.works) > 0]
-        transporter_li.sort(key=lambda t: len(t.works))
+        for _ in range(len(individual) // 20):
+            rand_idx = random.randint(0, len(individual) - 1)
 
-        for tp_index in range(len(transporter_li) // 2):
-        # for tp_index in range(1):
-            min_len_trans, max_len_trans = random.sample(transporter_li[:5], k=2)
+            works_len = len(individual[rand_idx].works)
+            if works_len >= 2:
+                random.shuffle(individual[rand_idx].works)
 
-            if len(min_len_trans.works) > len(max_len_trans.works):
-                min_len_trans, max_len_trans = max_len_trans, min_len_trans
 
-            max_len_trans_index = individual.index(max_len_trans)
-            min_len_trans_index = individual.index(min_len_trans)
-
-            max_len_trans_works = individual[max_len_trans_index].works
-            min_len_trans_works = individual[min_len_trans_index].works
-
-            if not min_len_trans_works or not max_len_trans_works:
-                continue
-            insert_block = random.choice(min_len_trans_works)
-
-            max_len_trans_works.insert(random.randint(0, len(max_len_trans_works) - 1), insert_block)
-            individual[min_len_trans_index].works = [b for b in min_len_trans_works if b.no != insert_block.no]
 
     def mutation2(self, individual):
         def swap_transporter_works(transporter1, transporter2):
@@ -57,8 +42,8 @@ class Mutation:
         for individual in population:
             if random.random() < mutation_rate:
                 self.mutation(individual)
-            if random.random() < mutation_rate:
-                self.mutation2(individual)
+            # if random.random() < mutation_rate:
+            #     self.mutation2(individual)
 
     def dynamic_mutation_rate(self, current_gen, generation, alpha=2):
         progress = current_gen / generation

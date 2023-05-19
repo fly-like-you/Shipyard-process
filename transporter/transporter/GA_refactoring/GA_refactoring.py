@@ -50,9 +50,9 @@ def get_dir_path(target):
 
 cluster = "cluster4"
 data_path = os.path.join(get_dir_path("transporter"), "data")
-node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
-transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
-block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
+node_file_path = os.path.join("/" + data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
+transporter_path = os.path.join("/" + data_path, 'transporters', 'transporter.csv')
+block_path = os.path.join("/" + data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
 
 class SetSizeException(Exception):
     pass

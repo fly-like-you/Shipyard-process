@@ -8,21 +8,6 @@ class SetSizeException(Exception):
 
 class Crossover:
     @staticmethod
-    def isSame(individual1, individual2):
-        for tp_idx in range(len(individual1)):
-            tp1 = individual1[tp_idx]
-            tp2 = individual2[tp_idx]
-            if len(tp1.works) == len(tp2.works):
-                for i in range(len(tp1.works)):
-                    block1 = tp1.works[i]
-                    block2 = tp2.works[i]
-                    if block1.no != block2.no:
-                        return False
-            else:
-                return False
-        return True
-
-    @staticmethod
     def cross(crossover_size, fitness_values, population, empty_transporters, selection: Selection, block_count):
         # 교차 연산 수행
         offspring = []
@@ -32,7 +17,8 @@ class Crossover:
             parent1, parent2 = random.sample(parents, k=2)
 
             # 교차 연산 수행
-            child1, child2 = Crossover.crossover(parent1, parent2, empty_transporters, block_count)
+            child1 = Crossover.crossover(parent1, parent2, empty_transporters, block_count)
+            child2 = Crossover.crossover(parent1, parent2, empty_transporters, block_count)
 
             # 교차 연산 결과 자손 개체 추가
             if child1:
@@ -44,38 +30,38 @@ class Crossover:
 
     @staticmethod
     def crossover(parent1, parent2, empty_transporters, block_count):
-        child1 = CustomDeepCopy(empty_transporters).get_deep_copy()
-        child2 = CustomDeepCopy(empty_transporters).get_deep_copy()
+        def is_block_in_works(works, block_no):
+            for idx, block in enumerate(works):
+                if block.no == block_no:
+                    return idx
+            return -1
+
+        child = CustomDeepCopy(empty_transporters).get_deep_copy()
+        for tp in child:
+            tp.works = [None for _ in range(block_count)]
+
 
         for i in range(1, block_count + 1):
-            # 각 부모 트랜스포터 중 하나 선택
-            if random.random() < 0.5:
-                selected_parent = parent1
-                other_parent = parent2
-            else:
-                selected_parent = parent2
-                other_parent = parent1
+            selected_parent = parent1 if random.random() < 0.5 else parent2
 
-            # 선택한 부모 트랜스포터의 works 리스트에서 현재 블록 번호를 가진 블록 선택
-            flag1 = False
-            for idx, transporter in enumerate(selected_parent):
-                for block in transporter.works:
-                    if block.no == i:
-                        child1[idx].works.append(block)
-                        flag1 = True
-                        break
-                if flag1:
-                    break
+            for tp_idx, transporter in enumerate(selected_parent):
+                b_idx = is_block_in_works(transporter.works, i)
+                if b_idx == -1:
+                    continue
 
-            # 다른 부모 트랜스포터의 works 리스트에서 중복되지 않는 블록 선택
-            flag2 = False
-            for idx, transporter in enumerate(other_parent):
-                for block in transporter.works:
-                    if block.no == i:
-                        child2[idx].works.append(block)
-                        flag2 = True
-                        break
-                    if flag2:
-                        break
-        return child1, child2
+                j = b_idx
+                while j < len(child[tp_idx].works) and child[tp_idx].works[j] is not None:
+                    j += 1
+
+                if j < len(child[tp_idx].works):
+                    child[tp_idx].works[j] = transporter.works[b_idx]
+                else:
+                    child[tp_idx].works.append(transporter.works[b_idx])
+
+                break
+
+        for tp in child:
+            tp.works = [i for i in tp.works if i is not None]
+
+        return child
 

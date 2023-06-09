@@ -59,7 +59,7 @@ def plot_weight_histogram(weight_list):
 
 
 if __name__ == '__main__':
-    node_file_path = os.path.join(os.getcwd(), "../nodes_and_blocks", "node(cluster3).csv")
+    node_file_path = os.path.join(os.getcwd(), "../nodes_and_blocks", "node.csv")
 
     file_manager = FileManager()
     block_path = os.path.join(os.getcwd(), '../nodes_and_blocks', 'blocks.csv')

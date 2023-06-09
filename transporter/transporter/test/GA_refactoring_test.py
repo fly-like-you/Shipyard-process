@@ -5,7 +5,7 @@ from transporter.data.create_data.FileManager import FileManager
 from transporter.data.create_data.Graph import Graph
 
 # 박준호가 작성한 GA_refactoring 파일의 코드를 테스트하는 코드입니다.
-node_file_path = os.path.join(os.getcwd(), '..', "create_data", "nodes_and_blocks", "node(cluster3).csv")
+node_file_path = os.path.join(os.getcwd(), '..', "create_data", "nodes_and_blocks", "node.csv")
 block_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'blocks.csv')
 transporter_path = os.path.join(os.getcwd(), '..', 'create_data', 'nodes_and_blocks', 'transporter.csv')
 

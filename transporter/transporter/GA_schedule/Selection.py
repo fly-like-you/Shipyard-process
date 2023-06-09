@@ -11,7 +11,6 @@ class Selection:
         total_distance = 0
         transporter_node = 1
 
-
         for block_no in individual:
             block = block_dict[block_no]
             total_distance += self.shortest_path_dict[block.start_node][block.end_node] + self.shortest_path_dict[transporter_node][block.start_node]

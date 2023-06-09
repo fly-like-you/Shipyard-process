@@ -50,16 +50,10 @@ class Mutation:
                 swap_transporter_works(light_tp, heavy_tp)
 
     def apply_mutation(self, population, current_gen, generation):
-        # mutation_rate = self.dynamic_mutation_rate(current_gen, generation)
         mutation_rate = self.mutation_rate
         for individual in population:
             if random.random() < mutation_rate:
                 self.mutation(individual)
                 self.pop_mutation(individual)
-            # if random.random() < mutation_rate:
-            #     self.mutation2(individual)
+                self.mutation2(individual)
 
-    def dynamic_mutation_rate(self, current_gen, generation, alpha=2):
-        progress = current_gen / generation
-        adjusted_progress = math.pow(progress, alpha)
-        return self.mutation_rate * (1 - adjusted_progress)

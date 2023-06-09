@@ -25,7 +25,7 @@ def plot_multiple_list_data(data_list, dot_list=None, color_list=None):
     plt.show()
 
 data_path = os.path.join(os.getcwd(), "../../data")
-block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block(cluster2).csv")
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block100.csv")
 
 file_manager = FileManager()
 block_container = file_manager.load_block_data(block_path)

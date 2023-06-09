@@ -79,7 +79,7 @@ class ScheduleGA:
 
 
 if __name__ == '__main__':
-    node_file_path = os.path.join(os.getcwd(), "..", "create_data", "nodes_and_blocks", "node(cluster3).csv")
+    node_file_path = os.path.join(os.getcwd(), "..", "create_data", "nodes_and_blocks", "node.csv")
     graph = Graph(node_file_path)
     shortest_path_dict = graph.get_shortest_path_dict()
     blocks = []

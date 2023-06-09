@@ -6,12 +6,10 @@ from transporter.transporter.GA_refactoring.Selection import Selection
 from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
-from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 from transporter.transporter.GA_refactoring.LocalSearch import LocalSearch
 from transporter.data.create_data.Graph import Graph
 
 import numpy as np
-import time
 import os
 
 ga_params = {
@@ -54,7 +52,7 @@ data_path = os.path.join(get_dir_path("transporter"), "data")
 node_file_path = os.path.join( data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"node({cluster}).csv")
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
 block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", f"block({cluster}).csv")
-# block_path = os.path.join(data_path, "create_data", "s.csv")
+
 class SetSizeException(Exception):
     pass
 
@@ -132,9 +130,7 @@ class GA:
 
             # 엘리트 개체 선택
             elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
-            import copy
-            elites = [copy.deepcopy(population[i]) for i in np.argsort(fitness_values)[::-1][:elite_size]]
-
+            elites = [population[i] for i in np.argsort(fitness_values)[::-1][:elite_size]]
 
             # 자식 해 생성
             crossover_size = self.POPULATION_SIZE - elite_size
@@ -145,9 +141,6 @@ class GA:
 
             # 다음 세대 개체 집단 생성
             population = elites + offspring
-
-            # 지역 탐색 연산 수행
-            local_search.do_search(population)
 
             # 각 개체의 적합도 계산
             fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
@@ -161,7 +154,6 @@ class GA:
             print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
-            data_test(population, self.BLOCKS)
 
         # 최종 세대에서 가장 우수한 개체 출력
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
@@ -185,15 +177,17 @@ def print_tp(individual):
 
 
 if __name__ == "__main__":
-    filemanager = FileManager()
-    graph = Graph(node_file_path)
-    transporter_container = filemanager.load_transporters(transporter_path)
-    block_container = filemanager.load_block_data(block_path, BLOCK_NUM=precondition['BLOCKS'])
+    for i in range(11, 31):
+        filemanager = FileManager()
+        graph = Graph(node_file_path)
+        transporter_container = filemanager.load_transporters(transporter_path)
+        block_container = filemanager.load_block_data(block_path)
 
-    ga = GA(transporter_container, block_container, graph, ga_params, precondition)
-    result = ga.run_GA()
+        ga = GA(transporter_container, block_container, graph, ga_params, precondition)
+        result = ga.run_GA()
 
-    with open(f'pickle_data/Hybrid_GA_{cluster}1111.pkl', 'wb') as f:
-        pickle.dump(result, f)
+        with open(f'pickle_data/None_GA_{cluster}{i}.pkl', 'wb') as f:
+            pickle.dump(result, f)
+
 
 

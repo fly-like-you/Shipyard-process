@@ -10,9 +10,9 @@ import os
 
 
 data_path = os.path.join(os.getcwd(), "../data")
-node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "node(cluster2).csv")
+node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "node.csv")
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
-block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block(cluster2).csv")
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", "block100.csv")
 
 graph = Graph(node_file_path)
 shortest_path_dict = graph.get_shortest_path_dict()

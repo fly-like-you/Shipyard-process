@@ -1,6 +1,7 @@
 import random
 import copy
 from transporter.transporter.GA_refactoring.Fitness import Fitness
+from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 
 
 class LocalSearch:
@@ -15,6 +16,7 @@ class LocalSearch:
 
 
     def local_search(self, individual):
+
         # 지역 탐색 함수
         cur_individual_fitness = Fitness.fitness(individual, self.time_set, self.shortest_path_dict)
 
@@ -38,9 +40,18 @@ class LocalSearch:
         insert_block = min_len_trans_works.pop(random.randint(0, len(min_len_trans_works) - 1))
         max_len_trans_works.insert(random.randint(0, len(max_len_trans_works) - 1), insert_block)
 
+        # self.schedule_ga(local_individual)
+
         local_search_fitness = Fitness.fitness(local_individual, self.time_set, self.shortest_path_dict)
 
         if local_search_fitness > cur_individual_fitness:
             return local_individual
         else:
             return individual
+
+    # def schedule_ga(self, individual):
+    #     for transporter in individual:
+    #         if len(transporter.works) > 5:
+    #             scheduling = ScheduleGA(transporter.works, self.shortest_path_dict, population_size=30,
+    #                                     max_generation=50)
+    #             transporter.works = scheduling.run()

@@ -97,6 +97,13 @@ class BlockGenerator:
 
 if __name__ == '__main__':
     import os
-    node_file_path = os.path.join(os.getcwd(), '../../transporter', "create_data", "../nodes_and_blocks", "cluster", "node(cluster4).csv")
-    bg = BlockGenerator(node_file_path, 100, weight_style='random')
-    bg.create_block_from_graph_file()
+    for i in range(3, 5):
+        node_file_path = os.path.join(os.getcwd(), "../nodes_and_blocks", "cluster", "simply_mapping", str(i), "node.csv")
+
+        bg = BlockGenerator(node_file_path, 200, weight_style='random')
+        bg.create_block_from_graph_file()
+        bg.write_csv(f"./{i}block200.csv")
+
+        bg = BlockGenerator(node_file_path, 300, weight_style='random')
+        bg.create_block_from_graph_file()
+        bg.write_csv(f"./{i}block300.csv")

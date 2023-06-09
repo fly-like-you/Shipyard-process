@@ -3,7 +3,7 @@ import numpy as np
 from transporter.data.create_data.Graph import Graph
 from transporter.measurement.DrawingFunctionPerformance import DrawingFunctionPerformance
 from transporter.data.create_data.FileManager import FileManager
-from transporter.transporter.GA_refactoring.GA_refactoring import GA
+from transporter.transporter.GA_refactoring.GA_refactoring import HGA
 from transporter.transporter.GA_legacy.GA_legacy import run_ga
 import os
 import matplotlib.pyplot as plt
@@ -48,7 +48,7 @@ config_dict = {
     중복되는 개체에 대해서 시각적인 그래프로 출력하는 파일
 '''
 def compareToLegacy():
-    ga = GA(transporter_container, random_block_container, config_dict)
+    ga = HGA(transporter_container, random_block_container, config_dict)
 
     dfp = DrawingFunctionPerformance(
         ga.run_GA,
@@ -110,7 +110,7 @@ def a(block_container, container_title):
     result_key = ['best_individual', 'work_tp_count', 'fitness']
     result_dict = dict()
     for i in range(len(method_key)):
-        result_dict[method_key[i]] = GA(transporter_container,
+        result_dict[method_key[i]] = HGA(transporter_container,
                                          block_container, graph, config_dict, selection_method=method_key[i]).run_GA()
     # 변환할 딕셔너리 초기화
     result = {key1: {key2: None for key2 in method_key} for key1 in result_key}

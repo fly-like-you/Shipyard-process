@@ -2,7 +2,7 @@ from transporter.data.create_data.FileManager import FileManager
 from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.data.create_data.Graph import Graph
-
+from tqdm import tqdm
 import numpy as np
 import copy
 import os
@@ -109,10 +109,12 @@ class MultiStart:
         population = self.population.get_population()
         elite_size = 1
 
-        result = {'best_individual': None, 'best_fitness': None, 'best_distance': None,
+        result = {'best_individual': None, 'best_fitness': None, 'best_distance': None, 'best_time_span': None,
                   'work_tp_count': [], 'fitness': [],
         }
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+
+        pbar = tqdm(total=self.GENERATION_SIZE)
 
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
@@ -120,7 +122,7 @@ class MultiStart:
             best_idx, best_transporter_count = self.get_best_solution(fitness_values, population)
             best_individual = population[best_idx]
 
-            population = Population(transporter_container, block_container, self.POPULATION_SIZE - elite_size)
+            population = Population(self.transporter_container, self.block_container, self.POPULATION_SIZE - elite_size)
             population.generate_population()
             population = population.get_population()
             population.append(best_individual)
@@ -130,21 +132,25 @@ class MultiStart:
 
 
             len_fit = len(set(fitness_values))
-            print(f'Creation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
+            # print(f'Creation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
+
+            pbar.set_postfix({'Multi Start Best Transporter Count': best_transporter_count})
+            pbar.update(1)
+
             data_test(population, self.BLOCKS)
 
         # 최종 세대에서 가장 우수한 개체 출력
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
         best_individual = population[np.argmax(fitness_values)]
-        print(
-            f'Final creation best individual: {result["work_tp_count"][-1]}, best_fitness_value: {np.max(fitness_values)}, ')
+        print(f'MultiStart best: {result["work_tp_count"][-1]}, best_fitness_value: {np.max(fitness_values)}')
 
         result['best_individual'] = best_individual
         result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
         result['best_distance'] = Fitness.individual_distance(best_individual, self.shortest_path_dict)
-        print('done')
+        result['best_time_span'] = Fitness.individual_time_span(best_individual, self.time_set, self.shortest_path_dict)
+
         return result
 
 

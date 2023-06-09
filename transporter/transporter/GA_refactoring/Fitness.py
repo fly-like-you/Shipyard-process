@@ -2,6 +2,31 @@ import math
 
 
 class Fitness:
+    @staticmethod
+    def individual_time_span(individual, time_set, shortest_path_dict):
+        start_time = time_set['start_time']
+        load_rest_time = time_set['load_rest_time']
+
+        total_time = 0  # 모든 트랜스포터가 일을 마치는 시간을 계산
+        DOCK = 1  # 트랜스포터 시작 노드
+
+        for transporter in individual:
+            cur_time = start_time  # 작업을 시작할 수 있는 가장 빠른 시간
+            cur_node = DOCK  # 현재 위치는 도크
+
+            for block in transporter.works:
+                dist = shortest_path_dict[cur_node][block.start_node] / 1000  # 이전 위치에서 현재 블록까지 이동한 거리
+                cur_time += dist / transporter.empty_speed  # 이동 시간 추가
+
+                cur_time = max(cur_time, block.start_time)  # 블록의 작업 시작 시간 이전에 도착한 경우, 해당 시간까지 대기
+                span_time = (shortest_path_dict[block.start_node][block.end_node] / 1000) / transporter.work_speed
+
+                cur_time += span_time + load_rest_time  # 블록을 운반하는데 걸리는 시간 추가
+                cur_node = block.end_node  # 현재 위치를 블록의 종료 위치로 업데이트
+
+            total_time += cur_time - start_time  # 모든 트랜스포터가 일을 마치는 시간 업데이트
+
+        return total_time  # 전체 작업 완료 시간의 역수를 반환하여 적합도 계산
 
     @staticmethod
     def fitness(individual, time_set, shortest_path_dict):
@@ -74,3 +99,5 @@ class Fitness:
                 cur_node = block.end_node  # 현재 위치를 블록의 종료 위치로 업데이트
 
         return fitness_score
+
+

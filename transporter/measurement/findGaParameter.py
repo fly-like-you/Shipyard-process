@@ -1,7 +1,7 @@
 import os
 import random
 
-from transporter.transporter.GA_refactoring.GA_refactoring import GA
+from transporter.transporter.GA_refactoring.GA_refactoring import HGA
 from transporter.data.create_data.FileManager import FileManager
 from transporter.data.create_data.Graph import Graph
 import pandas as pd
@@ -34,7 +34,7 @@ def random_search(config_dict, num_samples=300):
         params['POPULATION_SIZE'] = int(params['POPULATION_SIZE'])
         params['GENERATION_SIZE'] = int(params['GENERATION_SIZE'])
 
-        ga = GA(transporter_container, block_container, graph, params, precondition)
+        ga = HGA(transporter_container, block_container, graph, params, precondition)
         score = ga.run_GA()['best_fitness']
         # 모델 학습 및 평가
         results.append({

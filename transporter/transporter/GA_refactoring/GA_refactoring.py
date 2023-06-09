@@ -127,11 +127,12 @@ class GA:
         }
         fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
         prev_best_individual = population[np.argsort(fitness_values)[0]]
+        elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
 
             # 엘리트 개체 선택
-            elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
+
             import copy
             elites = [copy.deepcopy(population[i]) for i in np.argsort(fitness_values)[::-1][:elite_size]]
 

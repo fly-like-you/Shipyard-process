@@ -5,7 +5,7 @@ from transporter.data.create_data.FileManager import FileManager
 from transporter.data.create_data.Graph import Graph
 from matplotlib import font_manager, rc
 import matplotlib.pyplot as plt
-
+from tqdm import tqdm
 import pickle
 import os
 
@@ -14,12 +14,12 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 rc('font', family=font)
 plt.rcParams['axes.unicode_minus'] = False
 
-block = 100
+block = 200
 cluster = 2
 
 ga_params = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 400,
+    'GENERATION_SIZE': 500,
     'ELITISM_RATE': 0.05,
     'MUTATION_RATE': 0.1,
     'SELECTION_METHOD': 'selection2',
@@ -48,15 +48,18 @@ block_container = filemanager.load_block_data(block_path, BLOCK_NUM=precondition
 # 트랜스포터 받아오기
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
 transporter_container = filemanager.load_transporters(transporter_path)
-hga = HGA(transporter_container, block_container, graph, ga_params, precondition)
-ga = GA(transporter_container, block_container, graph, ga_params, precondition)
-ms = MultiStart(transporter_container, block_container, graph, ga_params, precondition)
+
 
 result_dict = {'HGA': [], "GA": [], "MS": []}
-for i in range(5):
-    result_dict['MS'].append(ms.run_GA())
-    result_dict['GA'].append(ga.run_GA())
+for i in range(1, 6):
+    print(f"-------------------{i}-----------------------")
+    hga = HGA(transporter_container, block_container, graph, ga_params, precondition)
+    ga = GA(transporter_container, block_container, graph, ga_params, precondition)
+    ms = MultiStart(transporter_container, block_container, graph, ga_params, precondition)
     result_dict['HGA'].append(hga.run_GA())
+    result_dict['GA'].append(ga.run_GA())
+    result_dict['MS'].append(ms.run_GA())
 
-with open('./compare_3algorithm.pickle', 'rb') as f:
-    result_dict = pickle.load(f)
+
+with open(f'./compare_3algorithm_TSP(block{block}).pickle', 'wb') as f:
+    pickle.dump(result_dict, f)

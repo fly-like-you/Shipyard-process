@@ -6,8 +6,9 @@ from transporter.transporter.GA_refactoring.Selection import Selection
 from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.transporter.GA_refactoring.Crossover import Crossover
-from transporter.transporter.GA_refactoring.LocalSearch import LocalSearch
 from transporter.data.create_data.Graph import Graph
+from scipy.stats import norm
+
 from tqdm import tqdm
 import numpy as np
 import os
@@ -118,6 +119,18 @@ class GA:
         return best_fitness, best_transporter_count
 
 
+    def gaussian_function(self):
+        mu = 7  # 평균
+        sigma = 5  # 표준편차
+        # 정규분포 함수 계산
+        li = [0]
+        for i in range(self.BLOCKS):
+            y = norm.pdf(i, mu, sigma)
+            # 최댓값을 2으로 조정
+            max_value = norm.pdf(mu, mu, sigma)
+            y = y / max_value
+            li.append(y)
+        return li
 
     def run_GA(self):
         population = self.population.get_population()
@@ -127,7 +140,8 @@ class GA:
         result = {'best_individual': None, 'best_fitness': None, 'best_distance': None, 'best_time_span': None,
                   'work_tp_count': [], 'fitness': [],
         }
-        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+        gaussian_list = self.gaussian_function()
+        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
 
         pbar = tqdm(total=self.GENERATION_SIZE)
 
@@ -149,7 +163,7 @@ class GA:
             population = elites + offspring
 
             # 각 개체의 적합도 계산
-            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
             sorted_fit_val = sorted(fitness_values)
 
 
@@ -169,17 +183,17 @@ class GA:
         # 스케줄러 실행
         best_individual = population[np.argmax(fitness_values)]
         before_distance = round(Fitness.individual_distance(best_individual, self.shortest_path_dict), 3)
-        before_fitness = round(Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict))
+        before_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list, log=True)
         self.run_schedule_ga(best_individual)
 
         # 거리, 적합도 계산
         after_distance = round(Fitness.individual_distance(best_individual, self.shortest_path_dict), 3)
-        after_fitness = round(Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict))
+        after_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list, log=True)
         print(f'Scheduler reduced distance: {before_distance} -> {after_distance}')
         print(f'Fitness Changes: {before_fitness} -> {after_fitness}')
 
         result['best_individual'] = best_individual
-        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
+        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list)
         result['best_distance'] = Fitness.individual_distance(best_individual, self.shortest_path_dict)
         result['best_time_span'] = Fitness.individual_time_span(best_individual, self.time_set, self.shortest_path_dict)
 

@@ -2,6 +2,7 @@ from transporter.data.create_data.FileManager import FileManager
 from transporter.transporter.GA_refactoring.Population import Population
 from transporter.transporter.GA_refactoring.Fitness import Fitness
 from transporter.data.create_data.Graph import Graph
+from scipy.stats import norm
 from tqdm import tqdm
 import numpy as np
 import copy
@@ -90,6 +91,7 @@ class MultiStart:
         self.population.generate_population()
 
 
+
     def get_best_solution(self, fitness_values, population):
         def get_transporter_count(individual):
             work_tp_count = 0
@@ -103,16 +105,28 @@ class MultiStart:
 
         return best_idx, best_transporter_count
 
-
+    def gaussian_function(self):
+        mu = 7  # 평균
+        sigma = 5  # 표준편차
+        # 정규분포 함수 계산
+        li = [0]
+        for i in range(self.BLOCKS):
+            y = norm.pdf(i, mu, sigma)
+            # 최댓값을 2으로 조정
+            max_value = norm.pdf(mu, mu, sigma)
+            y = y / max_value
+            li.append(y)
+        return li
 
     def run_GA(self):
         population = self.population.get_population()
+        gaussian_list = self.gaussian_function()
         elite_size = 1
 
         result = {'best_individual': None, 'best_fitness': None, 'best_distance': None, 'best_time_span': None,
                   'work_tp_count': [], 'fitness': [],
         }
-        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
 
         pbar = tqdm(total=self.GENERATION_SIZE)
 
@@ -127,7 +141,7 @@ class MultiStart:
             population = population.get_population()
             population.append(best_individual)
 
-            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
             sorted_fit_val = sorted(fitness_values)
 
 
@@ -142,12 +156,12 @@ class MultiStart:
             data_test(population, self.BLOCKS)
 
         # 최종 세대에서 가장 우수한 개체 출력
-        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
         best_individual = population[np.argmax(fitness_values)]
         print(f'MultiStart best: {result["work_tp_count"][-1]}, best_fitness_value: {np.max(fitness_values)}')
 
         result['best_individual'] = best_individual
-        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
+        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list)
         result['best_distance'] = Fitness.individual_distance(best_individual, self.shortest_path_dict)
         result['best_time_span'] = Fitness.individual_time_span(best_individual, self.time_set, self.shortest_path_dict)
 

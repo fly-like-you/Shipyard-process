@@ -9,24 +9,15 @@ from transporter.transporter.GA_refactoring.Crossover import Crossover
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 from transporter.transporter.GA_refactoring.LocalSearch import LocalSearch
 from transporter.data.create_data.Graph import Graph
+from scipy.stats import norm
+
 from tqdm import tqdm
+
 import numpy as np
-import time
+import copy
+
 import os
 
-ga_params = {
-    'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 2,
-    'ELITISM_RATE': 0.05,
-    'MUTATION_RATE': 0.1,
-    'SELECTION_METHOD': 'selection2',
-}
-precondition = {
-    'START_TIME': 9,  # 전제
-    'FINISH_TIME': 18,  # 전제
-    'LOAD_REST_TIME': 0.3,  # 전제
-    'BLOCKS': 100,  # 전제
-}
 def get_dir_path(target):
     file_path = os.getcwd()
     target_dir = target
@@ -50,7 +41,23 @@ def get_dir_path(target):
     return target_path
 
 cluster = 2
-block = 100
+block = 300
+
+ga_params = {
+    'POPULATION_SIZE': 100,
+    'GENERATION_SIZE': 50,
+    'ELITISM_RATE': 0.05,
+    'MUTATION_RATE': 0.01,
+    'SELECTION_METHOD': 'selection2',
+}
+precondition = {
+    'START_TIME': 9,  # 전제
+    'FINISH_TIME': 18,  # 전제
+    'LOAD_REST_TIME': 0.3,  # 전제
+    'BLOCKS': block,  # 전제
+}
+
+
 
 data_path = os.path.join(get_dir_path("transporter"), "data")
 node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", str(cluster), f"node.csv")
@@ -117,7 +124,18 @@ class HGA:
 
         return best_fitness, best_transporter_count
 
-
+    def gaussian_function(self):
+        mu = 7  # 평균
+        sigma = 5  # 표준편차
+        # 정규분포 함수 계산
+        li = [0]
+        for i in range(self.BLOCKS):
+            y = norm.pdf(i, mu, sigma)
+            # 최댓값을 2으로 조정
+            max_value = norm.pdf(mu, mu, sigma)
+            y = y / max_value
+            li.append(y)
+        return li
 
     def run_GA(self):
         population = self.population.get_population()
@@ -127,16 +145,16 @@ class HGA:
         result = {'best_individual': None, 'best_fitness': None, 'best_distance': None, 'best_time_span': None,
                   'work_tp_count': [], 'fitness': [],
         }
-        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+        gaussian_list = self.gaussian_function()
+        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
         elite_size = int(self.POPULATION_SIZE * self.ELITISM_RATE)
 
         pbar = tqdm(total=self.GENERATION_SIZE)
         # 진화 시작
         for generation in range(self.GENERATION_SIZE):
-
+            data_test(population, self.BLOCKS)
             # 엘리트 개체 선택
 
-            import copy
             elites = [copy.deepcopy(population[i]) for i in np.argsort(fitness_values)[::-1][:elite_size]]
 
 
@@ -151,45 +169,45 @@ class HGA:
             population = elites + offspring
 
             # 지역 탐색 연산 수행
-            local_search.do_search(population)
+            local_search.do_search(population, gaussian_list)
 
             # 각 개체의 적합도 계산
-            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
             sorted_fit_val = sorted(fitness_values)
 
 
             # 현재 세대에서 가장 우수한 개체 출력
-            best_individual, best_transporter_count = self.get_best_solution(fitness_values, population)
+            best_fitness, best_transporter_count = self.get_best_solution(fitness_values, population)
 
-            len_fit = len(set(fitness_values))
+            # len_fit = len(set(fitness_values))
             # print(f'Generation {generation + 1} best individual: {best_transporter_count}, best_fitness_value: {np.max(fitness_values)}, overlap_fit:{self.POPULATION_SIZE - len_fit}, fitness:{sorted_fit_val[-5:]}')
             result["fitness"].append(fitness_values)
             result['work_tp_count'].append(best_transporter_count)
             pbar.set_description(desc="Hybrid Genetic Algorithm Run")
-            pbar.set_postfix({'Best Transporter Count': best_transporter_count})
+            pbar.set_postfix({'Best Transporter Count': best_transporter_count, 'Fitness':  f'{best_fitness:.2f}'})
             pbar.update(1)
 
             data_test(population, self.BLOCKS)
         pbar.close()
 
         # 최종 세대에서 가장 우수한 개체 출력
-        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, time_set=self.time_set)
+        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
 
         # 스케줄러 실행
         best_individual = population[np.argmax(fitness_values)]
         before_distance = round(Fitness.individual_distance(best_individual, self.shortest_path_dict), 3)
-        before_fitness = round(Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict))
+        before_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list, log=True)
         self.run_schedule_ga(best_individual)
 
         # 거리, 적합도 계산
         after_distance = round(Fitness.individual_distance(best_individual, self.shortest_path_dict), 3)
-        after_fitness = round(Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict))
+        after_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list, log=True)
         print(f'Scheduler reduced distance: {before_distance} -> {after_distance}')
         print(f'Fitness Changes: {before_fitness} -> {after_fitness}')
 
         # 딕셔너리에 추가
         result['best_individual'] = best_individual
-        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
+        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list)
         result['best_distance'] = Fitness.individual_distance(best_individual, self.shortest_path_dict)
         result['best_time_span'] = Fitness.individual_time_span(best_individual, self.time_set, self.shortest_path_dict)
         return result

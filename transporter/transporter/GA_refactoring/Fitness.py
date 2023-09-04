@@ -1,6 +1,3 @@
-import math
-from scipy.stats import norm
-
 
 class Fitness:
     @staticmethod
@@ -31,7 +28,7 @@ class Fitness:
 
 
     @staticmethod
-    def fitness(individual, time_set, shortest_path_dict, gaussian_list, log=False):
+    def fitness123(individual, time_set, shortest_path_dict, gaussian_list, log=False):
         def divide_integer_part(num, penalty):
             penalty += 1
             integer_part = int(num)
@@ -65,10 +62,10 @@ class Fitness:
                 empty_tp_score += 1
                 if transporter.available_weight > 500:
                     weight_score += 1
-
             else:
                 num_works = len(transporter.works)
                 works_score += gaussian_list[num_works]
+
             for block in transporter.works:
                 dist = shortest_path_dict[cur_node][block.start_node] / 1000  # 이전 위치에서 현재 블록까지 이동한 거리
                 cur_time += dist / transporter.empty_speed  # 이동 시간 추가
@@ -106,11 +103,68 @@ class Fitness:
             print(f"work_time_factor: {work_time_factor}, total_time_factor: {total_time_factor}, transporter_weight_available_factor:{transporter_weight_available_factor}")
             print(empty_tp_score, works_score, weight_score)
         return fitness_score
+    @staticmethod
+    def fitness(individual, time_set, shortest_path_dict):
+        def validate_work_time(end_time, total_time):
+            return total_time >= end_time
+
+        start_time = time_set['start_time']
+        end_time = time_set['end_time']
+        load_rest_time = time_set['load_rest_time']
+        total_work_end_time = 0  # 모든 트랜스포터가 일을 마치는 시간을 계산
+        DOCK = 1  # 트랜스포터 시작 노드
+
+        weight = 0.9
+        fitness_score = 0
+        empty_tp_score = 0
+        weight_score = 0
+        work_time_factor = False
+        transporter_weight_available_factor = False
+        total_span_time = 0
+
+        for idx, transporter in enumerate(individual):
+            cur_time = start_time  # 작업을 시작할 수 있는 가장 빠른 시간
+            cur_node = DOCK  # 현재 위치는 도크
+
+            if not transporter.works:
+                empty_tp_score += 1
+                if transporter.available_weight > 500:
+                    weight_score += 1
+
+            for block in transporter.works:
+                dist = shortest_path_dict[cur_node][block.start_node] / 1000  # 이전 위치에서 현재 블록까지 이동한 거리
+                cur_time += dist / transporter.empty_speed  # 이동 시간 추가
+
+                cur_time = max(cur_time, block.start_time)  # 블록의 작업 시작 시간 이전에 도착한 경우, 해당 시간까지 대기
+                cur_time += (shortest_path_dict[block.start_node][block.end_node] / 1000) / transporter.work_speed  # 블록을 운반하는데 걸리는 시간 추가
+                if block.end_time <= cur_time:
+                    work_time_factor = True
+
+                cur_time += load_rest_time
+                cur_node = block.end_node  # 현재 위치를 블록의 종료 위치로 업데이트
+            total_span_time += cur_time - start_time
+            total_work_end_time = max(total_work_end_time, cur_time)  # 모든 트랜스포터가 일을 마치는 시간 업데이트
+
+        fitness_score += weight * empty_tp_score + (1 - weight) / (1 / total_span_time)
+
+        for transporter in individual:
+            if any(work.weight > transporter.available_weight for work in transporter.works):
+                transporter_weight_available_factor = True
+                break
+
+        total_time_factor = validate_work_time(end_time, total_work_end_time)
+
+        penalty_factor = work_time_factor + total_time_factor + transporter_weight_available_factor * 5
+        if penalty_factor:
+            fitness_score /= penalty_factor
+
+        return fitness_score
+
 
 
     @staticmethod
-    def get_fitness_list(population, shortest_path_dict, time_set, gaussian_list):
-        return [Fitness.fitness(p, time_set, shortest_path_dict, gaussian_list) for p in population]
+    def get_fitness_list(population, shortest_path_dict, time_set):
+        return [Fitness.fitness(p, time_set, shortest_path_dict) for p in population]
 
     @staticmethod
     def individual_distance(individual, shortest_path_dict):

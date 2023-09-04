@@ -55,5 +55,5 @@ class Mutation:
             if random.random() < mutation_rate:
                 self.mutation(individual)
                 self.pop_mutation(individual)
-                self.mutation2(individual)
+                # self.mutation2(individual)
 

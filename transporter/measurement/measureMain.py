@@ -3,8 +3,9 @@ import numpy as np
 from transporter.data.create_data.Graph import Graph
 from transporter.measurement.DrawingFunctionPerformance import DrawingFunctionPerformance
 from transporter.data.create_data.FileManager import FileManager
-from transporter.transporter.GA_refactoring.GA_refactoring import HGA
+from transporter.transporter.GA_refactoring.GA_refactoring import HGA, get_dir_path
 from transporter.transporter.GA_legacy.GA_legacy import run_ga
+
 import os
 import matplotlib.pyplot as plt
 from matplotlib import font_manager, rc
@@ -19,49 +20,38 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 rc('font', family=font)
 plt.rcParams['axes.unicode_minus'] = False
 
-transporter_path = os.path.join(os.getcwd(), '../transporter', 'create_data', 'nodes_and_blocks', 'transporter.csv')
-random_block_path = os.path.join(os.getcwd(), '../transporter', 'create_data', 'nodes_and_blocks', 'Blocks.csv')
-heavy_block_path = os.path.join(os.getcwd(), '../transporter', 'create_data', 'nodes_and_blocks', 'heavyBlocks.csv')
-light_block_path = os.path.join(os.getcwd(), '../transporter', 'create_data', 'nodes_and_blocks', 'lightBlocks.csv')
-node_file_path = os.path.join(os.getcwd(), '../transporter', "create_data", "nodes_and_blocks", "node.csv")
+cluster = 2
+block = 300
+
+ga_params = {
+    'POPULATION_SIZE': 100,
+    'GENERATION_SIZE': 300,
+    'ELITISM_RATE': 0.05,
+    'MUTATION_RATE': 0.01,
+    'SELECTION_METHOD': 'selection2',
+}
+precondition = {
+    'START_TIME': 9,  # 전제
+    'FINISH_TIME': 18,  # 전제
+    'LOAD_REST_TIME': 0.3,  # 전제
+    'BLOCKS': block,  # 전제
+}
+
+data_path = os.path.join(get_dir_path("transporter"), "data")
+node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", str(cluster), f"node.csv")
+block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", str(cluster), f"block{block}.csv")
+
+transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
 
 file_manager = FileManager()
 graph = Graph(node_file_path)
 transporter_container = file_manager.load_transporters(transporter_path)
-light_block_container = file_manager.load_block_data(light_block_path)
-heavy_block_container = file_manager.load_block_data(heavy_block_path)
-random_block_container = file_manager.load_block_data(random_block_path)
 
-config_dict = {
-    'POPULATION_SIZE': 100, # 한 세대에서의 인구 수를 설정합니다.
-    'GENERATION_SIZE': 1000,  # 몇 세대에 걸쳐 진화할 지 설정합니다.
-    'LOAD_REST_TIME': 0.3,  # 트랜스포터가 목적지에서 물건을 실어나르는 시간을 설정합니다 (시)
-    'ELITISM_RATE': 0.02,  # 엘리트 individual의 비율을 결정합니다.
-    'MUTATION_RATE': 0.05,  # 돌연변이가 일어날 확률을 설정합니다.
-    'START_TIME': 9,  # 일과의 시작시간을 결정합니다.
-    'FINISH_TIME': 18,  # 일과가 끝나는 시간을 결정합니다.
-    'BLOCKS': 100,  # 총 블록 수를 설정합니다. 최대 100개까지 설정가능합니다.
-}
 
 '''
     진화가 진행되면서 우수한 개체를 뽑기 때문에 중복되는 개체가 생기게 되는데
     중복되는 개체에 대해서 시각적인 그래프로 출력하는 파일
 '''
-def compareToLegacy():
-    ga = HGA(transporter_container, random_block_container, config_dict)
-
-    dfp = DrawingFunctionPerformance(
-        ga.run_GA,
-        run_ga,
-        (),
-        (transporter_container, random_block_container),
-        5
-    )
-
-    dfp.draw_performance_graph()
-    dfp.draw_time_graph()
-    dfp.show()
-
 
 def plot_graphs(x, y_list, labels, title):
     for y, label in zip(y_list, labels):
@@ -98,7 +88,7 @@ def plot_fitness(results, labels): # result col: 세대 row: 세대별 적합도
     plt.xlabel('세대')
     plt.ylabel('적합도')
     plt.title('세대별 개체별 적합도')
-    plt.savefig("30gen2selectionk10.png", dpi=300)
+    # plt.savefig("30gen2selectionk10.png", dpi=300)
 
     plt.show()
 
@@ -107,11 +97,10 @@ def plot_fitness(results, labels): # result col: 세대 row: 세대별 적합도
 
 def a(block_container, container_title):
     method_key = ['selection2']
-    result_key = ['best_individual', 'work_tp_count', 'fitness']
+    result_key = ['best_individual', 'work_tp_count', 'best_fitness']
     result_dict = dict()
     for i in range(len(method_key)):
-        result_dict[method_key[i]] = HGA(transporter_container,
-                                         block_container, graph, config_dict, selection_method=method_key[i]).run_GA()
+        result_dict[method_key[i]] = HGA(transporter_container, block_container, graph, ga_params, precondition).run_GA()
     # 변환할 딕셔너리 초기화
     result = {key1: {key2: None for key2 in method_key} for key1 in result_key}
     # 변환 수행
@@ -126,7 +115,7 @@ def a(block_container, container_title):
                 values.append(result[ret_key][method])
             plot_graphs(range(len(values[0])), values, method_key, container_title + " " + ret_key)
 
-        if ret_key == 'fitness':
+        if ret_key == 'best_fitness':
             for method in method_key:
                 values.append(result[ret_key][method])
 
@@ -147,5 +136,29 @@ def a(block_container, container_title):
 
 
 if __name__ == '__main__':
-    for i in range(1):
-        a(random_block_container, 'Random Blocks')
+    filemanager = FileManager()
+    graph = Graph(node_file_path)
+    transporter_container = filemanager.load_transporters(transporter_path)
+    block_container = filemanager.load_block_data(block_path, BLOCK_NUM=precondition['BLOCKS'])
+    ga = HGA(transporter_container, block_container, graph, ga_params, precondition).run_GA()
+    data = ga['fitness']
+
+    # 데이터의 행 수와 열 수
+    num_rows = len(data)
+    num_cols = len(data[0])
+
+    # 그래프 그리기
+    plt.figure(figsize=(10, 6))  # 그래프 크기 설정
+
+    for i in range(num_rows):
+        y_values = data[i]
+        plt.scatter([i] * num_cols, y_values, s=10)  # 각 요소를 점으로 찍기
+
+    plt.xlabel('Generation')  # x축 레이블
+    plt.ylabel('Fitness')  # y축 레이블
+    plt.title('세대별 적합도 수렴그래프')  # 그래프 제목
+
+
+    plt.show()  # 그래프 보이기
+    # for i in range(1):
+    #     a(block_container, 'Random Blocks')

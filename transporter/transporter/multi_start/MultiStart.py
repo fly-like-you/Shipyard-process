@@ -7,17 +7,8 @@ from tqdm import tqdm
 import numpy as np
 import copy
 import os
+import pickle
 
-ga_params = {
-    'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 500,
-}
-precondition = {
-    'START_TIME': 9,  # 전제
-    'FINISH_TIME': 18,  # 전제
-    'LOAD_REST_TIME': 0.3,  # 전제
-    'BLOCKS': 100,  # 전제
-}
 def get_dir_path(target):
     file_path = os.getcwd()
     target_dir = target
@@ -41,14 +32,24 @@ def get_dir_path(target):
     return target_path
 
 cluster = 2
-block = 100
-
+block = 300
 data_path = os.path.join(get_dir_path("transporter"), "data")
 node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", str(cluster), f"node.csv")
 block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", str(cluster), f"block{block}.csv")
 
 transporter_path = os.path.join(data_path, 'transporters', 'transporter.csv')
 # block_path = os.path.join(data_path, "create_data", "s.csv")
+
+ga_params = {
+    'POPULATION_SIZE': 100,
+    'GENERATION_SIZE': 500,
+}
+precondition = {
+    'START_TIME': 9,  # 전제
+    'FINISH_TIME': 18,  # 전제
+    'LOAD_REST_TIME': 0.3,  # 전제
+    'BLOCKS': block,  # 전제
+}
 class SetSizeException(Exception):
     pass
 
@@ -105,28 +106,15 @@ class MultiStart:
 
         return best_idx, best_transporter_count
 
-    def gaussian_function(self):
-        mu = 7  # 평균
-        sigma = 5  # 표준편차
-        # 정규분포 함수 계산
-        li = [0]
-        for i in range(self.BLOCKS):
-            y = norm.pdf(i, mu, sigma)
-            # 최댓값을 2으로 조정
-            max_value = norm.pdf(mu, mu, sigma)
-            y = y / max_value
-            li.append(y)
-        return li
 
     def run_GA(self):
         population = self.population.get_population()
-        gaussian_list = self.gaussian_function()
         elite_size = 1
 
         result = {'best_individual': None, 'best_fitness': None, 'best_distance': None, 'best_time_span': None,
                   'work_tp_count': [], 'fitness': [],
         }
-        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
+        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set)
 
         pbar = tqdm(total=self.GENERATION_SIZE)
 
@@ -141,7 +129,7 @@ class MultiStart:
             population = population.get_population()
             population.append(best_individual)
 
-            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
+            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set)
             sorted_fit_val = sorted(fitness_values)
 
 
@@ -156,12 +144,12 @@ class MultiStart:
             data_test(population, self.BLOCKS)
 
         # 최종 세대에서 가장 우수한 개체 출력
-        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
+        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set)
         best_individual = population[np.argmax(fitness_values)]
         print(f'MultiStart best: {result["work_tp_count"][-1]}, best_fitness_value: {np.max(fitness_values)}')
 
         result['best_individual'] = best_individual
-        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list)
+        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
         result['best_distance'] = Fitness.individual_distance(best_individual, self.shortest_path_dict)
         result['best_time_span'] = Fitness.individual_time_span(best_individual, self.time_set, self.shortest_path_dict)
 
@@ -177,13 +165,23 @@ def print_tp(individual):
 
 
 if __name__ == "__main__":
+
+
+
     filemanager = FileManager()
     graph = Graph(node_file_path)
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.load_block_data(block_path, BLOCK_NUM=precondition['BLOCKS'])
+    for i in range(5):
+        print(block)
+        ms = MultiStart(transporter_container, block_container, graph, ga_params, precondition)
+        result = ms.run_GA()
+        # 파일에 데이터 저장
+        with open(f'MutiStart{i}_{block}.pkl', 'wb') as file:
+            pickle.dump(result, file)
 
-    ms = MultiStart(transporter_container, block_container, graph, ga_params, precondition)
-    result = ms.run_GA()
+        print("데이터를 저장했습니다.")
+
 
     # with open(f'pickle_data/Hybrid_GA_{cluster}1111.pkl', 'wb') as f:
     #     pickle.dump(result, f)

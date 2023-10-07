@@ -15,19 +15,7 @@ import os
 
 from transporter.transporter.GA_schedule.ScheduleGA import ScheduleGA
 
-ga_params = {
-    'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 2,
-    'ELITISM_RATE': 0.05,
-    'MUTATION_RATE': 0.1,
-    'SELECTION_METHOD': 'selection2',
-}
-precondition = {
-    'START_TIME': 9,  # 전제
-    'FINISH_TIME': 18,  # 전제
-    'LOAD_REST_TIME': 0.3,  # 전제
-    'BLOCKS': 100,  # 전제
-}
+
 def get_dir_path(target):
     file_path = os.getcwd()
     target_dir = target
@@ -51,8 +39,21 @@ def get_dir_path(target):
     return target_path
 
 cluster = 2
-block = 100
+block = 300
 
+ga_params = {
+    'POPULATION_SIZE': 100,
+    'GENERATION_SIZE': 500,
+    'ELITISM_RATE': 0.05,
+    'MUTATION_RATE': 0.1,
+    'SELECTION_METHOD': 'selection2',
+}
+precondition = {
+    'START_TIME': 9,  # 전제
+    'FINISH_TIME': 18,  # 전제
+    'LOAD_REST_TIME': 0.3,  # 전제
+    'BLOCKS': block,  # 전제
+}
 data_path = os.path.join(get_dir_path("transporter"), "data")
 node_file_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", str(cluster), f"node.csv")
 block_path = os.path.join(data_path, "nodes_and_blocks", "cluster", "simply_mapping", str(cluster), f"block{block}.csv")
@@ -118,20 +119,6 @@ class GA:
 
         return best_fitness, best_transporter_count
 
-
-    def gaussian_function(self):
-        mu = 7  # 평균
-        sigma = 5  # 표준편차
-        # 정규분포 함수 계산
-        li = [0]
-        for i in range(self.BLOCKS):
-            y = norm.pdf(i, mu, sigma)
-            # 최댓값을 2으로 조정
-            max_value = norm.pdf(mu, mu, sigma)
-            y = y / max_value
-            li.append(y)
-        return li
-
     def run_GA(self):
         population = self.population.get_population()
         mutation = Mutation(self.MUTATION_RATE)
@@ -140,8 +127,8 @@ class GA:
         result = {'best_individual': None, 'best_fitness': None, 'best_distance': None, 'best_time_span': None,
                   'work_tp_count': [], 'fitness': [],
         }
-        gaussian_list = self.gaussian_function()
-        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
+
+        fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set)
 
         pbar = tqdm(total=self.GENERATION_SIZE)
 
@@ -163,7 +150,7 @@ class GA:
             population = elites + offspring
 
             # 각 개체의 적합도 계산
-            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set, gaussian_list)
+            fitness_values = Fitness.get_fitness_list(population, self.shortest_path_dict, self.time_set)
             sorted_fit_val = sorted(fitness_values)
 
 
@@ -183,17 +170,17 @@ class GA:
         # 스케줄러 실행
         best_individual = population[np.argmax(fitness_values)]
         before_distance = round(Fitness.individual_distance(best_individual, self.shortest_path_dict), 3)
-        before_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list, log=True)
+        before_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
         self.run_schedule_ga(best_individual)
 
         # 거리, 적합도 계산
         after_distance = round(Fitness.individual_distance(best_individual, self.shortest_path_dict), 3)
-        after_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list, log=True)
+        after_fitness = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
         print(f'Scheduler reduced distance: {before_distance} -> {after_distance}')
         print(f'Fitness Changes: {before_fitness} -> {after_fitness}')
 
         result['best_individual'] = best_individual
-        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict, gaussian_list)
+        result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
         result['best_distance'] = Fitness.individual_distance(best_individual, self.shortest_path_dict)
         result['best_time_span'] = Fitness.individual_time_span(best_individual, self.time_set, self.shortest_path_dict)
 
@@ -222,13 +209,17 @@ if __name__ == "__main__":
     filemanager = FileManager()
     graph = Graph(node_file_path)
     transporter_container = filemanager.load_transporters(transporter_path)
-    block_container = filemanager.load_block_data(block_path)
+    block_container = filemanager.load_block_data(block_path, BLOCK_NUM=precondition['BLOCKS'])
 
-    ga = GA(transporter_container, block_container, graph, ga_params, precondition)
-    result = ga.run_GA()
-    #
-    # with open(f'pickle_data/None_GA_{cluster}{i}.pkl', 'wb') as f:
-    #     pickle.dump(result, f)
+    for i in range(5):
+        print(block)
+        ga = GA(transporter_container, block_container, graph, ga_params, precondition)
+        result = ga.run_GA()
+        # 파일에 데이터 저장
+        with open(f'GA{i}_{block}.pkl', 'wb') as file:
+            pickle.dump(result, file)
+
+        print("데이터를 저장했습니다.")
 
 
 

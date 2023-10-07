@@ -50,11 +50,11 @@ def get_dir_path(target):
 
 
 cluster = 2
-block = 100
+block = 300
 
 ga_params = {
     'POPULATION_SIZE': 100,
-    'GENERATION_SIZE': 300,
+    'GENERATION_SIZE': 500,
     'ELITISM_RATE': 0.05,
     'MUTATION_RATE': 0.01,
     'SELECTION_METHOD': 'selection2',
@@ -118,6 +118,7 @@ class HGA:
         self.shortest_path_dict = graph.get_shortest_path_dict()
         self.population = Population(transporter_container, block_container, self.POPULATION_SIZE)
         self.population.generate_population()
+        self.result = {}
 
     def get_best_solution(self, fitness_values, population):
         def get_transporter_count(individual):
@@ -207,6 +208,8 @@ class HGA:
         result['best_fitness'] = Fitness.fitness(best_individual, self.time_set, self.shortest_path_dict)
         result['best_distance'] = Fitness.individual_distance(best_individual, self.shortest_path_dict)
         result['best_time_span'] = Fitness.individual_time_span(best_individual, self.time_set, self.shortest_path_dict)
+        self.result = result
+
         return result
 
     def run_schedule_ga(self, individual):
@@ -236,23 +239,28 @@ if __name__ == "__main__":
     transporter_container = filemanager.load_transporters(transporter_path)
     block_container = filemanager.load_block_data(block_path, BLOCK_NUM=precondition['BLOCKS'])
 
-    ga = HGA(transporter_container, block_container, graph, ga_params, precondition)
-    result = ga.run_GA()
+    for i in range(5):
+        ga = HGA(transporter_container, block_container, graph, ga_params, precondition)
+        result = ga.run_GA()
+        # 파일에 데이터 저장
+        with open(f'HGA{i}_{block}.pkl', 'wb') as file:
+            pickle.dump(result, file)
 
-    data = result['fitness']
-
-    # 데이터의 행 수와 열 수
-    num_rows = len(data)
-    num_cols = len(data[0])
-
-    # 그래프 그리기
-    plt.figure(figsize=(10, 6))  # 그래프 크기 설정
-
-    for i in range(num_rows):
-        y_values = data[i]
-        plt.scatter([i] * num_cols, y_values, s=10)  # 각 요소를 점으로 찍기
-
-    plt.xlabel('Generation')  # x축 레이블
-    plt.ylabel('Fitness')  # y축 레이블
-    plt.title('세대별 적합도 수렴그래프')  # 그래프 제목
-    plt.show()  # 그래프 보이기
+        print("데이터를 저장했습니다.")
+    # data = result['fitness']
+    #
+    # # 데이터의 행 수와 열 수
+    # num_rows = len(data)
+    # num_cols = len(data[0])
+    #
+    # # 그래프 그리기
+    # plt.figure(figsize=(10, 6))  # 그래프 크기 설정
+    #
+    # for i in range(num_rows):
+    #     y_values = data[i]
+    #     plt.scatter([i] * num_cols, y_values, s=10)  # 각 요소를 점으로 찍기
+    #
+    # plt.xlabel('Generation')  # x축 레이블
+    # plt.ylabel('Fitness')  # y축 레이블
+    # plt.title('Fitness Convergence Graph')  # 그래프 제목
+    # plt.show()  # 그래프 보이기
